@@ -1,5 +1,4 @@
 var rekapiKeyframeProperty = function (context, _, Tweenable) {
-
   'use strict';
 
   var DEFAULT_EASING = 'linear';
@@ -17,8 +16,7 @@ var rekapiKeyframeProperty = function (context, _, Tweenable) {
    * @param {string=} opt_easing The easing at which to animate to `value`.  Defaults to linear.
    * @constructor
    */
-  Kapi.KeyframeProperty = function (
-      ownerActor, millisecond, name, value, opt_easing) {
+  Kapi.KeyframeProperty = function (ownerActor, millisecond, name, value, opt_easing) {
     this.id = _.uniqueId('keyframeProperty_');
     this.ownerActor = ownerActor;
     this.millisecond = millisecond;
@@ -46,8 +44,7 @@ var rekapiKeyframeProperty = function (context, _, Tweenable) {
     var modifiedProperties = {};
 
     _.each(['millisecond', 'easing', 'value'], function (str) {
-      modifiedProperties[str] = typeof(newProperties[str]) === 'undefined' ?
-          this[str] : newProperties[str];
+      modifiedProperties[str] = typeof(newProperties[str]) === 'undefined' ? this[str] : newProperties[str];
     }, this);
 
     _.extend(this, modifiedProperties);
@@ -82,10 +79,9 @@ var rekapiKeyframeProperty = function (context, _, Tweenable) {
       toObj[this.name] = this.nextProperty.value;
       var delta = this.nextProperty.millisecond - this.millisecond;
       var interpolatedPosition = (millisecond - this.millisecond) / delta;
-      value = Tweenable.interpolate(fromObj, toObj, interpolatedPosition,
-          this.nextProperty.easing)[this.name];
+      value = Tweenable.interpolate(fromObj, toObj, interpolatedPosition, this.nextProperty.easing)[this.name];
     } else {
-      value =  this.value;
+      value = this.value;
     }
 
     return value;
@@ -100,11 +96,11 @@ var rekapiKeyframeProperty = function (context, _, Tweenable) {
    */
   KeyframeProperty.prototype.exportPropertyData = function () {
     return {
-     'id': this.id
-     ,'millisecond': this.millisecond
-     ,'name': this.name
-     ,'value': this.value
-     ,'easing': this.easing
+     id: this.id,
+     millisecond: this.millisecond,
+     name: this.name,
+     value: this.value,
+     easing: this.easing
     };
   };
 

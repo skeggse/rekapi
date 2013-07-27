@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <link href="../bower_components/qunit/qunit.css" rel="stylesheet" type="text/css" />
+  <link href="../bower_components/qunit/qunit/qunit.css" rel="stylesheet" type="text/css" />
   <script>
   var internalDebugNow = function () {
         return +(new Date());
@@ -10,7 +10,7 @@
         return internalDebugNow();
       };
   </script>
-  <script src="../bower_components/qunit/qunit.js"></script>
+  <script src="../bower_components/qunit/qunit/qunit.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
   <script src="../bower_components/shifty/dist/shifty.js"></script>
   <script src="../src/rekapi.core.js"></script>
@@ -58,9 +58,9 @@
           actor, 500, 'x', 10, 'easeInQuad');
 
       keyprop.modifyWith({
-        'millisecond': 1500
-        ,'easing': 'bounce'
-        ,'value': 123456
+        millisecond: 1500,
+        easing: 'bounce',
+        value: 123456
       });
 
       equal(keyprop.millisecond, 1500, 'millisecond was modified');
@@ -76,14 +76,14 @@
 
       var actor = new Kapi.Actor();
       var keyprop = new Kapi.KeyframeProperty(
-          actor, 500, 'x', 10, 'easeInQuad');
+        actor, 500, 'x', 10, 'easeInQuad');
       var linkedKeyprop = new Kapi.KeyframeProperty(
-          actor, 1000, 'x', 20, 'swingTo');
+        actor, 1000, 'x', 20, 'swingTo');
 
       keyprop.linkToNext(linkedKeyprop);
 
       equal(keyprop.nextProperty, linkedKeyprop,
-          'KeyframeProperty was linked up');
+        'KeyframeProperty was linked up');
     });
 
 
@@ -94,10 +94,8 @@
         function () {
 
       var actor = new Kapi.Actor();
-      var keyprop = new Kapi.KeyframeProperty(
-          actor, 500, 'x', 10, 'linear');
-      var linkedKeyprop = new Kapi.KeyframeProperty(
-          actor, 1000, 'x', 20, 'linear');
+      var keyprop = new Kapi.KeyframeProperty(actor, 500, 'x', 10, 'linear');
+      var linkedKeyprop = new Kapi.KeyframeProperty(actor, 1000, 'x', 20, 'linear');
 
       keyprop.linkToNext(linkedKeyprop);
       var midpoint = keyprop.getValueAt(750);
@@ -114,23 +112,16 @@
       var testKapi = setupTestKapi();
       var testActor = setupTestActor(testKapi);
       testActor.keyframe(0, {
-        'x': 1
+        x: 1
       });
 
       var exportedProp = testActor._propertyTracks.x[0].exportPropertyData();
-      equal(typeof exportedProp.id, 'string',
-          'id is a string');
-      equal(typeof exportedProp.millisecond, 'number',
-          'millisecond is a number');
-      equal(typeof exportedProp.name, 'string',
-          'name is a string');
-      equal(typeof exportedProp.value, 'number',
-          'value is a number');
-      equal(typeof exportedProp.easing, 'string',
-          'easing is a string');
+      equal(typeof exportedProp.id, 'string', 'id is a string');
+      equal(typeof exportedProp.millisecond, 'number', 'millisecond is a number');
+      equal(typeof exportedProp.name, 'string', 'name is a string');
+      equal(typeof exportedProp.value, 'number', 'value is a number');
+      equal(typeof exportedProp.easing, 'string', 'easing is a string');
     });
-
-
   } ());
   </script>
 </head>

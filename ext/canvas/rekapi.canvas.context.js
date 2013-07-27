@@ -107,8 +107,8 @@ var rekapiCanvasContext = function (context, _) {
     this.config.clearOnUpdate = true;
 
     _.extend(this._events, {
-      'beforeDraw': []
-      ,'afterDraw': []
+      beforeDraw: [],
+      afterDraw: []
     });
 
     // Set the dimensions on the <canvas> element based on Kapi constructor

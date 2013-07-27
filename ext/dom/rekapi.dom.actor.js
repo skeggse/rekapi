@@ -4,11 +4,12 @@ var rekapiDOM = function (context, _) {
 
   var Kapi = context.Kapi;
   var vendorTransforms = [
-    'transform'
-    ,'webkitTransform'
-    ,'MozTransform'
-    ,'oTransform'
-    ,'msTransform'];
+    'transform',
+    'webkitTransform',
+    'MozTransform',
+    'oTransform',
+    'msTransform'
+  ];
   var transformFunctions = [
     'translateX',
     'translateY',
@@ -17,7 +18,8 @@ var rekapiDOM = function (context, _) {
     'scaleY',
     'rotate',
     'skewX',
-    'skewY'];
+    'skewY'
+  ];
 
 
   function setStyle (forElement, styleName, styleValue) {

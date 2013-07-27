@@ -19,23 +19,20 @@
   <script src="../src/rekapi.init.js"></script>
   <script>
   function setupTestKapi () {
-    var sandbox
-        ,kapi
-        ,actor;
+    var sandbox, kapi, actor;
 
     sandbox = document.getElementById('sandbox');
     kapi = new Kapi({
-      'context': sandbox
-      ,'height': 300
-      ,'width': 300
+      context: sandbox,
+      height: 300,
+      width: 300
     });
 
     return kapi;
   }
 
   function  setupTestActor (forKapi) {
-    var actor
-        ,element;
+    var actor, element;
 
     element = document.getElementById('actor');
     element.removeAttribute('style');
@@ -46,7 +43,6 @@
   }
 
   $(function () {
-
     var kapi;
 
     function killTest () {
@@ -80,13 +76,11 @@
       kapi = setupTestKapi();
       actor = setupTestActor(kapi);
 
-      actor
-        .keyframe(0, {
-          'transform': 'translateX(0px) translateY(0px)'
-        })
-        .keyframe(1500, {
-          'transform': 'translateX(200px) translateY(200px)'
-        });
+      actor.keyframe(0, {
+        transform: 'translateX(0px) translateY(0px)'
+      }).keyframe(1500, {
+        transform: 'translateX(200px) translateY(200px)'
+      });
 
       kapi.play();
       console.log(kapi);
@@ -100,15 +94,13 @@
       kapi = setupTestKapi();
       actor = setupTestActor(kapi);
 
-      actor
-        .keyframe(0, {
-          'left': '0px'
-          ,'top': '0px'
-        })
-        .keyframe(1500, {
-          'left': '200px'
-          ,'top': '200px'
-        });
+      actor.keyframe(0, {
+        left: '0px',
+        top: '0px'
+      }).keyframe(1500, {
+        left: '200px',
+        top: '200px'
+      });
 
       kapi.play();
       console.log(kapi);
@@ -122,13 +114,11 @@
       kapi = setupTestKapi();
       actor = setupTestActor(kapi);
 
-      actor
-        .keyframe(0, {
-          'transform': 'translateX(0px) translateY(0px)'
-        })
-        .keyframe(1500, {
-          'transform': 'translateX(200px) translateY(200px)'
-        }, 'easeOutExpo');
+      actor.keyframe(0, {
+        transform: 'translateX(0px) translateY(0px)'
+      }).keyframe(1500, {
+        transform: 'translateX(200px) translateY(200px)'
+      }, 'easeOutExpo');
 
       kapi.play();
       console.log(kapi);
@@ -142,15 +132,13 @@
       kapi = setupTestKapi();
       actor = setupTestActor(kapi);
 
-      actor
-        .keyframe(0, {
-          'transform': 'translateX(0px) translateY(0px)'
-        })
-        .keyframe(1500, {
-          'transform': 'translateX(200px) translateY(200px)'
-        }, {
-          'transform': 'easeOutExpo easeInSine'
-        });
+      actor.keyframe(0, {
+        transform: 'translateX(0px) translateY(0px)'
+      }).keyframe(1500, {
+        transform: 'translateX(200px) translateY(200px)'
+      }, {
+        transform: 'easeOutExpo easeInSine'
+      });
 
       kapi.play();
       console.log(kapi);
@@ -164,19 +152,17 @@
       kapi = setupTestKapi();
       actor = setupTestActor(kapi);
 
-      actor
-        .keyframe(0, {
-          'transform': 'translateX(0px) translateY(0px) rotate(0deg)'
-          ,'background': '#f00'
-          ,'height': '50px'
-          ,'width': '50px'
-        })
-        .keyframe(1500, {
-          'transform': 'translateX(200px) translateY(200px) rotate(180deg)'
-          ,'background': '#00f'
-          ,'height': '100px'
-          ,'width': '100px'
-        }, 'easeOutExpo');
+      actor.keyframe(0, {
+        transform: 'translateX(0px) translateY(0px) rotate(0deg)',
+        background: '#f00',
+        height: '50px',
+        width: '50px'
+      }).keyframe(1500, {
+        transform: 'translateX(200px) translateY(200px) rotate(180deg)',
+        background: '#00f',
+        height: '100px',
+        width: '100px'
+      }, 'easeOutExpo');
 
       kapi.play();
       console.log(kapi);
@@ -190,23 +176,21 @@
       kapi = setupTestKapi();
       actor = setupTestActor(kapi);
 
-      actor
-        .keyframe(0, {
-          'translateX': '0px'
-          ,'translateY': '0px'
-          ,'rotate': '0deg'
-          ,'background': '#f00'
-          ,'height': '50px'
-          ,'width': '50px'
-        })
-        .keyframe(1500, {
-          'translateX': '200px'
-          ,'translateY': '200px'
-          ,'rotate': '180deg'
-          ,'background': '#00f'
-          ,'height': '100px'
-          ,'width': '100px'
-        }, 'easeOutExpo');
+      actor.keyframe(0, {
+        translateX: '0px',
+        translateY: '0px',
+        rotate: '0deg',
+        background: '#f00',
+        height: '50px',
+        width: '50px'
+      }).keyframe(1500, {
+        translateX: '200px',
+        translateY: '200px',
+        rotate: '180deg',
+        background: '#00f',
+        height: '100px',
+        width: '100px'
+      }, 'easeOutExpo');
 
       kapi.play();
       console.log(kapi);
@@ -220,13 +204,13 @@
       kapi = setupTestKapi();
       actor = setupTestActor(kapi);
 
-      actor
-        .keyframe(500, {
-          'transform': 'translateX(0px) translateY(0px)'
-        })
-        .keyframe(1500, {
-          'transform': 'translateX(200px) translateY(200px)'
-        });
+      actor.keyframe(0, {
+        transform: 'translateX(0px) translateY(0px)'
+      }).keyframe(500, {
+        transform: 'translateX(0px) translateY(0px)'
+      }).keyframe(1500, {
+        transform: 'translateX(200px) translateY(200px)'
+      });
 
       kapi.play();
       console.log(kapi);

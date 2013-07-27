@@ -18,18 +18,18 @@
     var CANVAS_HEIGHT = 300;
     var CANVAS_WIDTH = 300;
     var PERCENTAGES = {
-        '#CFC7A4': 15
-        ,'#5A9E94': 35
-        ,'#005275': 10
-        ,'#002344': 35
-        ,'#A38650': 5
+        '#CFC7A4': 15,
+        '#5A9E94': 35,
+        '#005275': 10,
+        '#002344': 35,
+        '#A38650': 5
       };
 
     var canvas = document.getElementsByTagName('canvas')[0];
     var kapi = new Kapi({
-        'context': canvas
-        ,'height': CANVAS_HEIGHT
-        ,'width': CANVAS_WIDTH
+        context: canvas,
+        height: CANVAS_HEIGHT,
+        width: CANVAS_WIDTH
       });
 
     var actors = {};
@@ -60,16 +60,16 @@
     function getActor (basePercentage, color, previousPiece) {
       var actor = new Kapi.CanvasActor({
         'draw': function (canvas_context, state) {
-          var percent = basePercentage
-              ,previousSum = getStartRad(this)
-              ,x ,y
-              ,spread
-              ,adjustedSpread
-              ,radius
-              ,adjustedRadius
-              ,startAngle
-              ,endAngle
-              ,midAngle;
+          var percent = basePercentage;
+          var previousSum = getStartRad(this);
+          var x, y;
+          var spread;
+          var adjustedSpread;
+          var radius;
+          var adjustedRadius;
+          var startAngle;
+          var endAngle;
+          var midAngle;
 
           adjustedRadius = radius = state.radius;
           adjustedSpread = spread = state.spread;
@@ -85,26 +85,22 @@
           }
 
           startAngle = percentToRad(75 + previousSum);
-          midAngle = percentToRad(75 + previousSum +
-              (percent * state.scale * .5));
+          midAngle = percentToRad(75 + previousSum + (percent * state.scale * .5));
           endAngle = percentToRad(75 + previousSum + (percent * state.scale));
-          canvas_context.translate(Math.cos(midAngle) * adjustedSpread,
-              Math.sin(midAngle) * adjustedSpread);
+          canvas_context.translate(Math.cos(midAngle) * adjustedSpread, Math.sin(midAngle) * adjustedSpread);
           canvas_context.beginPath();
           canvas_context.moveTo(state.x, state.y);
-          canvas_context.arc(
-              x, y, adjustedRadius, startAngle, endAngle, false);
+          canvas_context.arc(x, y, adjustedRadius, startAngle, endAngle, false);
           canvas_context.moveTo(state.x, state.y);
           canvas_context.closePath();
-          canvas_context.translate(Math.cos(midAngle) * -adjustedSpread,
-              Math.sin(midAngle) * -adjustedSpread);
+          canvas_context.translate(Math.cos(midAngle) * -adjustedSpread, Math.sin(midAngle) * -adjustedSpread);
           canvas_context.fillStyle = color || '#f0f';
           canvas_context.fill();
           canvas_context.globalAlpha = 1;
 
           actor.data = {
-            'previousPiece': previousPiece
-            ,'percent': percent * state.scale
+            previousPiece: previousPiece,
+            percent: percent * state.scale
           };
         }
       });
@@ -113,8 +109,7 @@
       return actor;
     }
 
-    var previousSum = 0
-        ,previousActor;
+    var previousSum = 0, previousActor;
 
     _.each(PERCENTAGES, function (percent, color) {
       actors[color] = getActor(percent, color, previousActor);
@@ -128,51 +123,50 @@
 
     _.each(actors, function (actor, color) {
       actor.keyframe(0, {
-       'x': CANVAS_WIDTH / 2
-        ,'y': CANVAS_HEIGHT / 2
-        ,'color': color
-        ,'scale': 1
-        ,'spread': 80
-        ,'radius': 100
-        ,'opacity': 0
+        x: CANVAS_WIDTH / 2,
+        y: CANVAS_HEIGHT / 2,
+        color: color,
+        scale: 1,
+        spread: 80,
+        radius: 100,
+        opacity: 0
       })
       .wait(delay += 75)
       .keyframe(1800, {
-        'scale': 1
-        ,'spread': 0
-        ,'opacity': 1
+        scale: 1,
+        spread: 0,
+        opacity: 1
       }, {
-        'spread': 'bouncePast'
-        ,'opacity': 'easeOutCubic'
+        spread: 'bouncePast',
+        opacity: 'easeOutCubic'
       })
       .wait(2500 + delay)
       .keyframe(3000 + delay * 2, {
-        'scale': 1
-        ,'spread': 16
+        scale: 1,
+        spread: 16
       }, {
-        'spread': 'easeFromTo'
+        spread: 'easeFromTo'
       })
       .keyframe(3900 + delay * 2, {
-        'scale': 1
-        ,'spread': 0
+        scale: 1,
+        spread: 0
       }, {
-        'spread': 'easeFromTo'
+        spread: 'easeFromTo'
       })
       .wait(5000)
       .keyframe(6200, {
-        'scale': 0
+        scale: 0
       }, {
-        'scale': 'swingFrom'
+        scale: 'swingFrom'
       })
       .wait(6850);
 
       actor.modifyKeyframeProperty('opacity', 3, {
-        'millisecond': 1400
+        millisecond: 1400
       });
     });
 
     kapi.play();
-
   });
   </script>
 </body>

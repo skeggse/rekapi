@@ -22,46 +22,17 @@ function fireEvent (kapi, eventName, _, opt_data) {
 
 
 /*!
- * @param {Kapi} kapi
+ * Does nothing.  Virtually nothing at all.
  */
-function recalculateAnimationLength (kapi, _) {
-  var actorLengths = [];
-
-  _.each(kapi._actors, function (actor) {
-    actorLengths.push(actor.getEnd());
-  });
-
-  kapi._animationLength = Math.max.apply(Math, actorLengths);
-}
-
-
-/*!
- * Does nothing.  Absolutely nothing at all.
- */
-function noop () {
-  // NOOP!
-}
+function noop () {}
 
 
 var rekapiCore = function (root, _, Tweenable) {
-
   'use strict';
 
   // GLOBAL is read from for various environment properties
   // http://stackoverflow.com/questions/3277182/how-to-get-the-global-object-in-javascript
   var Fn = Function, GLOBAL = new Fn('return this')();
-
-
-  /*!
-   * Determines which iteration of the loop the animation is currently in.
-   * @param {Kapi} kapi
-   * @param {number} timeSinceStart
-   */
-  function determineCurrentLoopIteration (kapi, timeSinceStart) {
-    var currentIteration = Math.floor(
-        (timeSinceStart) / kapi._animationLength);
-    return currentIteration;
-  }
 
 
   /*!
@@ -75,49 +46,6 @@ var rekapiCore = function (root, _, Tweenable) {
 
 
   /*!
-   * Determines is the animation is complete or not.
-   * @param {Kapi} kapi
-   * @param {number} currentLoopIteration
-   */
-  function isAnimationComplete (kapi, currentLoopIteration) {
-    return currentLoopIteration >= kapi._timesToIterate
-        && kapi._timesToIterate !== -1;
-  }
-
-
-  /*!
-   * Stops the animation if the animation is complete.
-   * @param {Kapi} kapi
-   * @param {number} currentLoopIteration
-   */
-  function updatePlayState (kapi, currentLoopIteration) {
-    if (isAnimationComplete(kapi, currentLoopIteration)) {
-      kapi.stop();
-      fireEvent(kapi, 'animationComplete', _);
-    }
-  }
-
-
-  /*!
-   * Calculate how far in the animation loop `kapi` is, in milliseconds, based
-   * on the current time.  Also overflows into a new loop if necessary.
-   * @param {Kapi} kapi
-   * @return {number}
-   */
-  function calculateLoopPosition (kapi, forMillisecond, currentLoopIteration) {
-    var currentLoopPosition;
-
-    if (isAnimationComplete(kapi, currentLoopIteration)) {
-      currentLoopPosition = kapi._animationLength;
-    } else {
-      currentLoopPosition = forMillisecond % kapi._animationLength;
-    }
-
-    return currentLoopPosition;
-  }
-
-
-  /*!
    * Calculate the position and state for a given millisecond.
    * Also updates the state internally and accounts for how many loop
    * iterations the animation runs for.
@@ -125,11 +53,7 @@ var rekapiCore = function (root, _, Tweenable) {
    * @param {number} forMillisecond The millisecond to update
    */
   function updateToMillisecond (kapi, forMillisecond) {
-    var currentIteration = determineCurrentLoopIteration(kapi, forMillisecond);
-    var loopPosition = calculateLoopPosition(kapi, forMillisecond,
-        currentIteration);
-    kapi.update(loopPosition);
-    updatePlayState(kapi, currentIteration);
+    kapi.update(forMillisecond);
   }
 
 
@@ -154,14 +78,7 @@ var rekapiCore = function (root, _, Tweenable) {
       updateToCurrentMillisecond(kapi);
     };
 
-    // Need to check for .call presence to get around an IE limitation.
-    // See annotation for cancelLoop for more info.
-    if (kapi._scheduleUpdate.call) {
-      kapi._loopId = kapi._scheduleUpdate.call(GLOBAL,
-          updateFn, 1000 / kapi.config.fps);
-    } else {
-      kapi._loopId = setTimeout(updateFn, 1000 / kapi.config.fps);
-    }
+    kapi._loopId = kapi._scheduleUpdate.call(GLOBAL, updateFn, 1000 / kapi.config.fps);
   }
 
 
@@ -178,11 +95,11 @@ var rekapiCore = function (root, _, Tweenable) {
       // requestAnimationFrame() shim by Paul Irish (modified for Rekapi)
       // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
       updateMethod = GLOBAL.requestAnimationFrame ||
-        GLOBAL.webkitRequestAnimationFrame ||
-        GLOBAL.oRequestAnimationFrame      ||
-        GLOBAL.msRequestAnimationFrame     ||
-        (GLOBAL.mozCancelRequestAnimationFrame
-          && GLOBAL.mozRequestAnimationFrame) ||
+        GLOBAL.webkitRequestAnimationFrame        ||
+        GLOBAL.oRequestAnimationFrame             ||
+        GLOBAL.msRequestAnimationFrame            ||
+        (GLOBAL.mozCancelRequestAnimationFrame    &&
+          GLOBAL.mozRequestAnimationFrame)        ||
         GLOBAL.setTimeout;
     }
 
@@ -201,10 +118,10 @@ var rekapiCore = function (root, _, Tweenable) {
       cancelMethod = GLOBAL.clearTimeout;
     } else {
       cancelMethod = GLOBAL.cancelAnimationFrame ||
-        GLOBAL.webkitCancelAnimationFrame ||
-        GLOBAL.oCancelAnimationFrame      ||
-        GLOBAL.msCancelAnimationFrame     ||
-        GLOBAL.mozCancelRequestAnimationFrame ||
+        GLOBAL.webkitCancelAnimationFrame        ||
+        GLOBAL.oCancelAnimationFrame             ||
+        GLOBAL.msCancelAnimationFrame            ||
+        GLOBAL.mozCancelRequestAnimationFrame    ||
         GLOBAL.clearTimeout;
     }
 
@@ -212,31 +129,16 @@ var rekapiCore = function (root, _, Tweenable) {
   }
 
 
-  /*!
-   * Cancels an update loop.  This abstraction is needed to get around the fact
-   * that in IE, clearTimeout is not technically a function
-   * (https://twitter.com/kitcambridge/status/206655060342603777) and thus
-   * Function.prototype.call cannot be used upon it.
-   * @param {Kapi} kapi
-   */
-  function cancelLoop (kapi) {
-    if (kapi._cancelUpdate.call) {
-      kapi._cancelUpdate.call(GLOBAL, kapi._loopId);
-    } else {
-      clearTimeout(kapi._loopId);
-    }
-  }
-
   var now = Tweenable.now;
 
   var defaultConfig = {
-    'fps': 60
+    fps: 60
   };
 
   var playState = {
-    'STOPPED': 'stopped'
-    ,'PAUSED': 'paused'
-    ,'PLAYING': 'playing'
+    STOPPED: 'stopped',
+    PAUSED: 'paused',
+    PLAYING: 'playing'
   };
 
 
@@ -257,22 +159,19 @@ var rekapiCore = function (root, _, Tweenable) {
     this._playState = playState.STOPPED;
 
     this._events = {
-      'animationComplete': []
-      ,'playStateChange': []
-      ,'play': []
-      ,'pause': []
-      ,'stop': []
-      ,'beforeUpdate': []
-      ,'afterUpdate': []
-      ,'addActor': []
-      ,'removeActor': []
+      animationComplete: [],
+      playStateChange: [],
+      play: [],
+      pause: [],
+      stop: [],
+      beforeUpdate: [],
+      afterUpdate: [],
+      addActor: [],
+      removeActor: []
     };
 
     // How many times to loop the animation before stopping.
     this._timesToIterate = -1;
-
-    // Millisecond duration of the animation
-    this._animationLength = 0;
 
     // The setTimeout ID of `tick`
     this._loopId = null;
@@ -324,7 +223,6 @@ var rekapiCore = function (root, _, Tweenable) {
       actor.kapi = this;
       actor.fps = this.framerate();
       this._actors[actor.id] = actor;
-      recalculateAnimationLength(this, _);
       actor.setup();
 
       fireEvent(this, 'addActor', _, actor);
@@ -379,7 +277,6 @@ var rekapiCore = function (root, _, Tweenable) {
     delete this._actors[actor.id];
     delete actor.kapi;
     actor.teardown();
-    recalculateAnimationLength(this, _);
 
     fireEvent(this, 'removeActor', _, actor);
 
@@ -395,7 +292,7 @@ var rekapiCore = function (root, _, Tweenable) {
    * @return {Kapi}
    */
   Kapi.prototype.play = function (opt_howManyTimes) {
-    cancelLoop(this);
+    this._cancelUpdate.call(GLOBAL, this._loopId);
 
     if (this._playState === playState.PAUSED) {
       this._loopTimestamp += now() - this._pausedAtTime;
@@ -454,7 +351,7 @@ var rekapiCore = function (root, _, Tweenable) {
     }
 
     this._playState = playState.PAUSED;
-    cancelLoop(this);
+    this._cancelUpdate.call(GLOBAL, this._loopId);
     this._pausedAtTime = now();
 
     fireEvent(this, 'playStateChange', _);
@@ -472,7 +369,7 @@ var rekapiCore = function (root, _, Tweenable) {
    */
   Kapi.prototype.stop = function () {
     this._playState = playState.STOPPED;
-    cancelLoop(this);
+    this._cancelUpdate.call(GLOBAL, this._loopId);
 
     // Also kill any shifty tweens that are running.
     _.each(this._actors, function (actor) {
@@ -498,24 +395,13 @@ var rekapiCore = function (root, _, Tweenable) {
 
 
   /**
-   * Return the length of the animation, in milliseconds.
-   *
-   * __[Example](../../../../docs/examples/animation_length.html)__
-   * @return {number}
-   */
-  Kapi.prototype.animationLength = function () {
-    return this._animationLength;
-  };
-
-
-  /**
-   * Return the normalized (between 0 and 1) timeline position that was last calculated.
+   * Return the timeline position that was last calculated.
    *
    * __[Example](../../../../docs/examples/last_position_updated.html)__
    * @return {number}
    */
   Kapi.prototype.lastPositionUpdated = function () {
-    return (this._lastUpdatedMillisecond / this._animationLength);
+    return this._lastUpdatedMillisecond;
   };
 
 
@@ -636,8 +522,7 @@ var rekapiCore = function (root, _, Tweenable) {
    */
   Kapi.prototype.exportTimeline = function () {
     var exportData = {
-      'duration': this._animationLength
-      ,'actors': {}
+      actors: {}
     };
 
     _.each(this._actors, function (actor) {
@@ -653,16 +538,11 @@ var rekapiCore = function (root, _, Tweenable) {
   // Some hooks for testing.
   if (KAPI_DEBUG) {
     Kapi._private = {
-      'calculateLoopPosition': calculateLoopPosition
-      ,'updateToCurrentMillisecond': updateToCurrentMillisecond
-      ,'tick': tick
-      ,'determineCurrentLoopIteration': determineCurrentLoopIteration
-      ,'calculateTimeSinceStart': calculateTimeSinceStart
-      ,'isAnimationComplete': isAnimationComplete
-      ,'updatePlayState': updatePlayState
+      updateToCurrentMillisecond: updateToCurrentMillisecond,
+      tick: tick,
+      calculateTimeSinceStart: calculateTimeSinceStart
     };
   }
 
   root.Kapi = Kapi;
-
 };

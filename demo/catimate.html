@@ -18,35 +18,34 @@
 
     // Dependencies (Underscore and Shifty) are automatically loaded.
     require(['rekapi'], function(Kapi) {
-      var canvas = document.getElementById('canvas')
-          ,kapi = new Kapi()
-          ,cat
-          ,time = 0;
+      var canvas = document.getElementById('canvas');
+      var kapi = new Kapi();
+      var cat;
+      var time = 0;
 
       var catImg = document.getElementsByTagName('img')[0];
       cat = new Kapi.DOMActor(catImg);
       kapi.addActor(cat);
 
-      cat
-        .keyframe(time, {
-          'transform': 'translateX(-240px) translateY(-160px) rotate(0deg)'
-        }).keyframe(time += 1200, {
-          'transform': 'translateX(300px) translateY(250px) rotate(0deg)'
-        }, 'bouncePast')
-        .wait(time += 400)
-        .keyframe(time += 700, {
-          'transform': 'translateX(50px) translateY(250px) rotate(0deg)'
-        }, 'easeInOutBack')
-        .wait(time += 150)
-        .keyframe(time += 850, {
-          'transform': 'translateX(344px) translateY(0px) rotate(-90deg)'
-        }, {
-          'transform': 'easeFromTo easeInOutCubic bouncePast'
-        })
-        .keyframe(time += 700, {
-          'transform': 'translateX(344px) translateY(800px) rotate(-90deg)'
-        }, 'easeFrom')
-        .wait(time += 500);
+      cat.keyframe(time, {
+        'transform': 'translateX(-240px) translateY(-160px) rotate(0deg)'
+      }).keyframe(time += 1200, {
+        'transform': 'translateX(300px) translateY(250px) rotate(0deg)'
+      }, 'bouncePast')
+      .wait(time += 400)
+      .keyframe(time += 700, {
+        'transform': 'translateX(50px) translateY(250px) rotate(0deg)'
+      }, 'easeInOutBack')
+      .wait(time += 150)
+      .keyframe(time += 850, {
+        'transform': 'translateX(344px) translateY(0px) rotate(-90deg)'
+      }, {
+        'transform': 'easeFromTo easeInOutCubic bouncePast'
+      })
+      .keyframe(time += 700, {
+        'transform': 'translateX(344px) translateY(800px) rotate(-90deg)'
+      }, 'easeFrom')
+      .wait(time += 500);
 
       catImg.style.display = 'block';
 
@@ -55,7 +54,6 @@
       } else {
         kapi.play();
       }
-
     });
   </script>
 </body>

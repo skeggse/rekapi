@@ -1,5 +1,4 @@
 var rekapiActor = function (context, _, Tweenable) {
-
   'use strict';
 
   var DEFAULT_EASING = 'linear';
@@ -45,8 +44,7 @@ var rekapiActor = function (context, _, Tweenable) {
    */
   function sortPropertyTracks (actor) {
     _.each(actor._propertyTracks, function (track, name) {
-      actor._propertyTracks[name] = _.sortBy(actor._propertyTracks[name],
-        function (keyframeProperty) {
+      actor._propertyTracks[name] = _.sortBy(actor._propertyTracks[name], function (keyframeProperty) {
         return keyframeProperty.millisecond;
       });
     });
@@ -126,8 +124,7 @@ var rekapiActor = function (context, _, Tweenable) {
    * @return {Kapi.KeyframeProperty}
    */
   function findPropertyAtMillisecondInTrack (actor, trackName, millisecond) {
-    return _.find(actor._propertyTracks[trackName],
-        function (keyframeProperty) {
+    return _.find(actor._propertyTracks[trackName], function (keyframeProperty) {
       return keyframeProperty.millisecond === millisecond;
     });
   }
@@ -176,12 +173,11 @@ var rekapiActor = function (context, _, Tweenable) {
   function cleanupAfterKeyframeModification (actor) {
     sortPropertyTracks(actor);
     invalidatePropertyCache(actor);
-    recalculateAnimationLength(actor.kapi, _);
   }
 
 
   /**
-   * Create a `Kapi.Actor` instance.  Note that the rest of the API docs for `Kapi.Actor` will simply refer to this Object as `Actor`.
+   * Create a `Kapi.Actor` instance.  Note that the rest of the API docs `Kapi.Actor` will simply refer to this Object as `Actor`.
    *
    * Valid properties of `opt_config` (you can omit the ones you don't need):
    *
@@ -196,7 +192,7 @@ var rekapiActor = function (context, _, Tweenable) {
    * @param {Object} opt_config
    * @constructor
    */
-  Kapi.Actor = function (opt_config) {
+  var Actor = Kapi.Actor = function Actor (opt_config) {
 
     opt_config = opt_config || {};
 
@@ -204,15 +200,15 @@ var rekapiActor = function (context, _, Tweenable) {
     Tweenable.call(this);
 
     _.extend(this, {
-      '_propertyTracks': {}
-      ,'_timelinePropertyCaches': {}
-      ,'_timelinePropertyCacheIndex': []
-      ,'_keyframeProperties': {}
-      ,'id': _.uniqueId()
-      ,'setup': opt_config.setup || noop
-      ,'update': opt_config.update || noop
-      ,'teardown': opt_config.teardown || noop
-      ,'data': {}
+      _propertyTracks: {},
+      _timelinePropertyCaches: {},
+      _timelinePropertyCacheIndex: [],
+      _keyframeProperties: {},
+      id: _.uniqueId(),
+      setup: opt_config.setup || noop,
+      update: opt_config.update || noop,
+      teardown: opt_config.teardown || noop,
+      data: {}
     });
 
     if (opt_config.context) {
@@ -221,17 +217,16 @@ var rekapiActor = function (context, _, Tweenable) {
 
     return this;
   };
-  var Actor = Kapi.Actor;
 
 
-  // Kind of a fun way to set up an inheritance chain.  `ActorMethods` prevents
-  // methods on `Actor.prototype` from polluting `Tweenable`'s prototype with
-  // `Actor` specific methods.
-  var ActorMethods = function () {};
+  // inheritance chain similar to inherits from node and closure
+  /** @constructor */
+  var ActorMethods = function ActorMethods () {}
   ActorMethods.prototype = Tweenable.prototype;
+  Actor.superClass_ = Tweenable.prototype;
   Actor.prototype = new ActorMethods();
-  // But the magic doesn't stop here!  `Actor`'s constructor steals the
-  // `Tweenable` constructor.
+  /** @override */
+  Actor.prototype.constructor = Actor;
 
 
   /**
@@ -301,8 +296,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
    * @param {string|Object} opt_easing Optional easing string or configuration object.
    * @return {Kapi.Actor}
    */
-  Actor.prototype.keyframe = function keyframe (
-      millisecond, properties, opt_easing) {
+  Actor.prototype.keyframe = function (millisecond, properties, opt_easing) {
 
     var originalEasingString;
 
@@ -326,8 +320,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     });
 
     _.each(properties, function (value, name) {
-      var newKeyframeProperty = new Kapi.KeyframeProperty(
-          this, millisecond, name, value, opt_easing[name]);
+      var newKeyframeProperty = new Kapi.KeyframeProperty(this, millisecond, name, value, opt_easing[name]);
 
       this._keyframeProperties[newKeyframeProperty.id] = newKeyframeProperty;
 
@@ -338,10 +331,6 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
       this._propertyTracks[name].push(newKeyframeProperty);
       sortPropertyTracks(this);
     }, this);
-
-    if (this.kapi) {
-      recalculateAnimationLength(this.kapi, _);
-    }
 
     invalidatePropertyCache(this);
 
@@ -358,8 +347,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
    * @return {Kapi.KeyframeProperty|undefined}
    */
   Actor.prototype.getKeyframeProperty = function (property, index) {
-    if (this._propertyTracks[property]
-        && this._propertyTracks[property][index]) {
+    if (this._propertyTracks[property] && this._propertyTracks[property][index]) {
       return this._propertyTracks[property][index];
     }
   };
@@ -377,8 +365,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
   Actor.prototype.modifyKeyframeProperty = function (
       property, index, newProperties) {
 
-    if (this._propertyTracks[property]
-        && this._propertyTracks[property][index]) {
+    if (this._propertyTracks[property] && this._propertyTracks[property][index]) {
       this._propertyTracks[property][index].modifyWith(newProperties);
     }
 
@@ -428,8 +415,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     var sourceEasings = {};
 
     _.each(this._propertyTracks, function (propertyTrack, trackName) {
-      var foundProperty = findPropertyAtMillisecondInTrack(this, trackName,
-          copyFrom);
+      var foundProperty = findPropertyAtMillisecondInTrack(this, trackName, copyFrom);
 
       if (foundProperty) {
         sourcePositions[trackName] = foundProperty.value;
@@ -495,7 +481,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     }
 
     if (starts.length === 0) {
-      starts = [0];
+      return 0;
     }
 
     return Math.min.apply(Math, starts);
@@ -562,8 +548,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     }
 
     return _.find(tracks, function (propertyTrack, trackName) {
-      var retrievedProperty =
-          findPropertyAtMillisecondInTrack(this, trackName, millisecond);
+      var retrievedProperty = findPropertyAtMillisecondInTrack(this, trackName, millisecond);
       return retrievedProperty !== undefined;
     }, this) !== undefined;
   };
@@ -587,7 +572,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
 
       if (property) {
         property.modifyWith({
-          'millisecond': to
+          millisecond: to
         });
       }
     }, this);
@@ -628,18 +613,16 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
    * @param {Object} opt_easingModification
    * @return {Kapi.Actor}
    */
-  Actor.prototype.modifyKeyframe = function (
-      millisecond, stateModification, opt_easingModification) {
+  Actor.prototype.modifyKeyframe = function (millisecond, stateModification, opt_easingModification) {
     opt_easingModification = opt_easingModification || {};
 
     _.each(this._propertyTracks, function (propertyTrack, trackName) {
-      var property = findPropertyAtMillisecondInTrack(
-          this, trackName, millisecond);
+      var property = findPropertyAtMillisecondInTrack(this, trackName, millisecond);
 
       if (property) {
         property.modifyWith({
-          'value': stateModification[trackName]
-          ,'easing': opt_easingModification[trackName]
+          value: stateModification[trackName],
+          easing: opt_easingModification[trackName]
         });
       }
     }, this);
@@ -675,10 +658,6 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
       }
     }, this);
 
-    if (this.kapi) {
-      recalculateAnimationLength(this.kapi, _);
-    }
-
     invalidatePropertyCache(this);
 
     return this;
@@ -712,19 +691,20 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     var startMs = this.getStart();
     var endMs = this.getEnd();
 
-    millisecond = Math.min(endMs, millisecond);
+    var remainder = millisecond % endMs;
+    if (remainder === 0 && millisecond > 0)
+      millisecond = endMs;
+    else
+      millisecond = remainder;
 
     if (startMs <= millisecond) {
       var latestCacheId = getPropertyCacheIdForMillisecond(this, millisecond);
-      var propertiesToInterpolate =
-          this._timelinePropertyCaches[this._timelinePropertyCacheIndex[
-          latestCacheId]];
+      var propertiesToInterpolate = this._timelinePropertyCaches[this._timelinePropertyCacheIndex[latestCacheId]];
       var interpolatedObject = {};
 
       _.each(propertiesToInterpolate, function (keyframeProperty, propName) {
         if (keyframeProperty) {
-          interpolatedObject[propName] =
-              keyframeProperty.getValueAt(millisecond);
+          interpolatedObject[propName] = keyframeProperty.getValueAt(millisecond);
         }
       });
 
@@ -743,10 +723,10 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
    */
   Actor.prototype.exportTimeline = function () {
     var exportData = {
-      'start': this.getStart()
-      ,'end': this.getEnd()
-      ,'trackNames': this.getTrackNames()
-      ,'propertyTracks': {}
+      start: this.getStart(),
+      end: this.getEnd(),
+      trackNames: this.getTrackNames(),
+      propertyTracks: {}
     };
 
     _.each(this._propertyTracks, function (propertyTrack, trackName) {

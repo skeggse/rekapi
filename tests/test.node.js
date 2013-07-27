@@ -14,8 +14,8 @@ requirejs(['rekapi'], function(Kapi) {
   kapi.addActor(actor);
 
   actor
-    .keyframe(0, { x: 0 })
-    .keyframe(250, { x: 100 });
+    .keyframe(0, {x: 0})
+    .keyframe(250, {x: 100});
 
   kapi.on('play', function () {
     console.log('The animation has begun!');

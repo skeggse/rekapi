@@ -24,15 +24,13 @@ kapi.addActor(actor);
 Now you can keyframe `actor` like you would any Actor.
 
 ````javascript
-actor
-  .keyframe(0, {
-    'left': '0px'
-    ,'top': '0px'
-  })
-  .keyframe(1500, {
-    'left': '200px'
-    ,'top': '200px'
-  }, 'easeOutExpo');
+actor.keyframe(0, {
+  left: '0px',
+  top: '0px'
+}).keyframe(1500, {
+  left: '200px',
+  top: '200px'
+}, 'easeOutExpo');
 
 kapi.play();
 ````
@@ -43,17 +41,15 @@ kapi.play();
 example:
 
 ````javascript
-actor
-  .keyframe(0, {
-    'translateX': '0px'
-    ,'translateY': '0px'
-    ,'rotate': '0deg'
-  })
-  .keyframe(1500, {
-    'translateX': '200px'
-    ,'translateY': '200px'
-    ,'rotate': '90deg'
-  }, 'easeOutExpo');
+actor.keyframe(0, {
+  translateX: '0px',
+  translateY: '0px',
+  rotate: '0deg'
+}).keyframe(1500, {
+  translateX: '200px',
+  translateY: '200px',
+  rotate: '90deg'
+}, 'easeOutExpo');
 ````
 
 The list of supported functions is: `translateX`, `translateY`, `scale`,
@@ -70,13 +66,11 @@ inconsistencies.
 You can also use the `transform` property directly:
 
 ````javascript
-actor
-  .keyframe(0, {
-    'transform': 'translateX(0px) translateY(0px) rotate(0deg)'
-  })
-  .keyframe(1500, {
-    'transform': 'translateX(200px) translateY(200px) rotate(90deg)'
-  }, 'easeOutExpo');
+actor.keyframe(0, {
+  transform: 'translateX(0px) translateY(0px) rotate(0deg)'
+}).keyframe(1500, {
+  transform: 'translateX(200px) translateY(200px) rotate(90deg)'
+}, 'easeOutExpo');
 ````
 
 ## getCSSName

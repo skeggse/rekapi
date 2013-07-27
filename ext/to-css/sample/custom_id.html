@@ -32,21 +32,20 @@
       var actor = new Kapi.DOMActor(actorDiv);
       animation.addActor(actor);
 
-      actor
-        .keyframe(500, {
-          'transform': 'translateX(0px) translateY(0px)'
-          ,'background': '#f00'
-        }).keyframe(3000, {
-          'transform': 'translateX(400px) translateY(400px)'
-          ,'background': '#00f'
-        }, {
-          'transform': 'easeInOutQuart swingTo'
-        });
+      actor.keyframe(500, {
+        transform: 'translateX(0px) translateY(0px)',
+        background: '#f00'
+      }).keyframe(3000, {
+        transform: 'translateX(400px) translateY(400px)',
+        background: '#00f'
+      }, {
+        transform: 'easeInOutQuart swingTo'
+      });
 
      console.log(animation);
      var css = animation.toCSS({
-       'vendors': ['webkit', 'mozilla']
-       ,'name': 'myAwesomeAnimation'
+       vendors: ['webkit', 'mozilla'],
+       name: 'myAwesomeAnimation'
      });
 
      var style = document.createElement('style');
@@ -57,7 +56,6 @@
      // doesn't implicitly match the class that was added by the
      // `Kapi.DOMActor` constructor, so add it here.
      actorDiv.classList.add('myAwesomeAnimation');
-
     </script>
   </body>
 </html>

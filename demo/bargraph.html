@@ -17,12 +17,12 @@
 
     function makeBarActor (val) {
       return new Kapi.CanvasActor({
-        'setup': function () {
+        setup: function () {
           this.data = {
-            'val': val
+            val: val
           };
-        }
-        ,'draw': function (context, state) {
+        },
+        draw: function (context, state) {
           context.beginPath();
           context.lineWidth = 20;
           context.moveTo(state.x, state.y);
@@ -55,14 +55,14 @@
       return getColor();
     }
 
-    var canvas = document.getElementsByTagName('canvas')[0]
-        ,kapi = new Kapi({
-          'context': canvas
-          ,'height': 400
-          ,'width': 250
-        })
-        ,BASELINE = 350
-        ,bars = [];
+    var canvas = document.getElementsByTagName('canvas')[0];
+    var kapi = new Kapi({
+      context: canvas,
+      height: 400,
+      width: 250
+    });
+    var BASELINE = 350;
+    var bars = [];
 
     bars[0] = makeBarActor(150);
     bars[1] = makeBarActor(300);
@@ -78,23 +78,22 @@
       kapi.addActor(bar);
 
       bar.keyframe(time, {
-        'x': xOffset
-        ,'y': BASELINE
-        ,'color': getColor()
-        ,'height': 0
+        x: xOffset,
+        y: BASELINE,
+        color: getColor(),
+        height: 0
       }).keyframe(time += 750, {
-        'x': xOffset
-        ,'height': bar.data.val
+        x: xOffset,
+        height: bar.data.val
       }, 'swingTo').wait(time += 500)
       .keyframe(time += 500, {
-        'x': -50
+        x: -50
       }, 'swingFrom')
       .wait(time += 750);
     });
 
 
     kapi.play();
-
   });
   </script>
 </body>

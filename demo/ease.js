@@ -23,21 +23,20 @@ $(function () {
   function generatePathPoints (x1, y1, x2, y2, easeX, easeY) {
     var points = [];
     var from = {
-        'x': x1
-        ,'y': y1
+        x: x1,
+        y: y1
       };
     var to = {
-        'x': x2
-        ,'y': y2
+        x: x2,
+        y: y2
       };
     var easing = {
-      'x': easeX
-      ,'y': easeY
+      x: easeX,
+      y: easeY
     };
     var i, point;
     for (i = 0; i <= PRERENDER_GRANULARITY; i++) {
-      point = Tweenable.interpolate(
-          from, to, (1 / PRERENDER_GRANULARITY) * i, easing);
+      point = Tweenable.interpolate(from, to, (1 / PRERENDER_GRANULARITY) * i, easing);
       points.push(point);
     }
 
@@ -81,14 +80,16 @@ $(function () {
     }
 
     try {
-      eval('Tweenable.prototype.formula.' + easename
-          + ' = function (x) {return ' + val + '}');
+      Tweenable.prototype.formula[easename] = function(x) {
+        return val;
+      };
       el.data('lastvalidfn', val);
       el.removeClass('error');
       updatePath();
     } catch (ex) {
-      eval('Tweenable.prototype.formula.' + easename
-          + ' = function (x) {return ' + lastValid + '}');
+      Tweenable.prototype.formula[easename] = function(x) {
+        return lastValid;
+      };
       el.addClass('error');
     }
   });
@@ -105,8 +106,8 @@ $(function () {
   function getCrosshairCoords (crosshair) {
     var pos = crosshair.position();
     return {
-      x: pos.left + crosshair.width()/2
-      ,y: pos.top + crosshair.height()/2
+      x: pos.left + crosshair.width() / 2,
+      y: pos.top + crosshair.height() / 2
     };
   }
 
@@ -116,8 +117,8 @@ $(function () {
 
     _.each(trackNames, function (trackName) {
       actor.modifyKeyframeProperty(trackName, lastFrameIndex, {
-            'millisecond': toMillisecond
-          });
+        millisecond: toMillisecond
+      });
     });
 
     animationDuration = toMillisecond;
@@ -125,48 +126,40 @@ $(function () {
 
   var canvas = $('canvas')[0];
   var kapi = new Kapi({
-      'context': canvas
-      ,'height': 400
-      ,'width': 500
-    })
-    ,circle = new Kapi.CanvasActor({
-      'draw': function (canvas_context, state) {
+    context: canvas,
+    height: 400,
+    width: 500
+  });
+  var circle = new Kapi.CanvasActor({
+    draw: function (canvas_context, state) {
+      if (isPathShowing && prerenderedPath) {
+        canvas_context.drawImage(prerenderedPath, 0, 0);
+      }
 
-        if (isPathShowing && prerenderedPath) {
-          canvas_context.drawImage(prerenderedPath, 0, 0);
-        }
-
-        canvas_context.beginPath();
-          canvas_context.arc(
-            state.x || 0,
-            state.y || 0,
-            state.radius || 50,
-            0,
-            Math.PI*2,
-            true);
-          canvas_context.fillStyle = state.color || '#444';
-          canvas_context.fill();
-          canvas_context.closePath();
-          return this;
-        }
-      });
+      canvas_context.beginPath();
+      canvas_context.arc(state.x || 0, state.y || 0, state.radius || 50, 0, Math.PI*2, true);
+      canvas_context.fillStyle = state.color || '#444';
+      canvas_context.fill();
+      canvas_context.closePath();
+      return this;
+    }
+  });
 
   var crosshairs = {
-    'from': $('.crosshair.from')
-    ,'to': $('.crosshair.to')
+    from: $('.crosshair.from'),
+    to: $('.crosshair.to')
   };
 
   crosshairs.from.add(crosshairs.to).dragon({
-    'within': crosshairs.from.parent()
-    ,'drag': handleDrag
-    ,'dragEnd': handleDragStop
+    within: crosshairs.from.parent(),
+    drag: handleDrag,
+    dragEnd: handleDragStop
   });
 
   function updatePath () {
     var fromCoords = getCrosshairCoords(crosshairs.from);
     var toCoords = getCrosshairCoords(crosshairs.to);
-    generatePathPrerender(fromCoords.x, fromCoords.y, toCoords.x, toCoords.y,
-        selects._from.val(), selects._to.val());
+    generatePathPrerender(fromCoords.x, fromCoords.y, toCoords.x, toCoords.y, selects._from.val(), selects._to.val());
   }
 
   function handleDrag (evt, ui) {
@@ -178,9 +171,7 @@ $(function () {
       .modifyKeyframe(timeToModify, getCrosshairCoords(crosshairs[pos]))
       .updateState(kapi._lastUpdatedMillisecond);
 
-    kapi
-      .canvas.clear()
-      .update();
+    kapi.canvas.clear().update();
 
     updatePath();
   }
@@ -192,8 +183,8 @@ $(function () {
   function initSelect (select) {
     _.each(Tweenable.prototype.formula, function (formula, name) {
       var option = $(document.createElement('option'), {
-          'value': name
-        });
+        value: name
+      });
 
       option.html(name);
       select.append(option);
@@ -217,9 +208,7 @@ $(function () {
     easingObj[target.data('axis')] = target.val();
     circle.modifyKeyframe(animationDuration, {}, easingObj)
     updatePath();
-    kapi
-      .canvas.clear()
-      .update();
+    kapi.canvas.clear().update();
   });
 
   var showPath = $('#show-path');
@@ -241,13 +230,13 @@ $(function () {
     var augmentBy;
     var which = evt.which;
 
-    if (which != 38 && which != 40) {
+    if (which !== 38 && which !== 40) {
       return;
     }
 
-    if (which == 38) { // up
+    if (which === 38) { // up
       augmentBy = 10;
-    } else if (which == 40) { // down
+    } else if (which === 40) { // down
       augmentBy = -10;
     }
 
@@ -257,15 +246,13 @@ $(function () {
 
   kapi.addActor(circle);
   circle.keyframe(0, _.extend(getCrosshairCoords(crosshairs.from), {
-      'color': '#777'
-      ,'radius': 15
-    }))
-    .keyframe(initialDuration, _.extend(getCrosshairCoords(crosshairs.to), {
-      'color': '#333'
-    }));
+    color: '#777',
+    radius: 15
+  })).keyframe(initialDuration, _.extend(getCrosshairCoords(crosshairs.to), {
+    color: '#333'
+  }));
 
   var controls = new RekapiScrubber(kapi, canvas);
   updatePath();
   kapi.play();
-
 });

@@ -1,5 +1,4 @@
 var rekapi = function (global, deps) {
-
   'use strict';
 
   // If `deps` is defined, it means that Rekapi is loaded via AMD.
@@ -46,10 +45,12 @@ if (typeof define === 'function' && define.amd) {
   // Example: define(['vendor/rekapi.min'], function(Kapi) { ... });
   define(['shifty', 'underscore'], function (Tweenable, Underscore) {
     var underscoreSupportsAMD = (Underscore != null);
-    var deps = {  Tweenable: Tweenable,
-                  // Some versions of Underscore.js support AMD, others don't.
-                  // If not, use the `_` global.
-                  underscore: underscoreSupportsAMD ? Underscore : _ };
+    var deps = {
+      Tweenable: Tweenable,
+      // Some versions of Underscore.js support AMD, others don't.
+      // If not, use the `_` global.
+      underscore: underscoreSupportsAMD ? Underscore : _
+    };
     var Kapi = rekapi({}, deps);
 
     if (KAPI_DEBUG) {

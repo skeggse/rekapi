@@ -17,29 +17,21 @@
 
     function makeBubble () {
       return new Kapi.CanvasActor({
-        'draw': function (canvas_context, state) {
+        draw: function (canvas_context, state) {
           canvas_context.beginPath();
-          canvas_context.arc(
-            state.x || 0,
-            state.y || 0,
-            Math.abs(state.radius || 50),
-            0,
-            Math.PI*2,
-            true);
+          canvas_context.arc(state.x || 0, state.y || 0, Math.abs(state.radius || 50), 0, Math.PI*2, true);
           canvas_context.closePath();
 
-          var rad = Math.abs(state.radius)
-          ,startX = state.x - (rad * .2)
-          ,startY = state.y - (rad * .2)
-          ,startRad = rad * .3
-          ,endX = state.x
-          ,endY = state.y
-          ,endRad = rad * 2
-          ,grad = canvas_context.createRadialGradient(startX, startY,
-              startRad, endX, endY, endRad);
+          var rad = Math.abs(state.radius);
+          var startX = state.x - (rad * .2);
+          var startY = state.y - (rad * .2);
+          var startRad = rad * .3;
+          var endX = state.x;
+          var endY = state.y;
+          var endRad = rad * 2;
+          var grad = canvas_context.createRadialGradient(startX, startY, startRad, endX, endY, endRad);
 
-          var bgColor = Tweenable.interpolate({color: state.color},
-              {color: 'rgb(0,0,0)'}, 0.3, 'linear').color;
+          var bgColor = Tweenable.interpolate({color: state.color}, {color: 'rgb(0,0,0)'}, 0.3, 'linear').color;
 
           grad.addColorStop(0, state.color);
           grad.addColorStop(1, bgColor);
@@ -62,10 +54,7 @@
     }
 
     function getColor () {
-      return'rgb('
-        + parseInt(Math.random() * 255, 10) + ','
-        + parseInt(Math.random() * 255, 10) + ','
-        + parseInt(Math.random() * 255, 10) + ')';
+      return 'rgb(' + parseInt(Math.random() * 255, 10) + ',' + parseInt(Math.random() * 255, 10) + ',' + parseInt(Math.random() * 255, 10) + ')';
     }
 
     function getRandomEasing () {
@@ -76,13 +65,13 @@
 
     function generateRandomFrame (actor, time) {
       actor.keyframe(time += 2250, {
-        'x': getBubbleX()
-        ,'y': getBubbleY()
-        ,'radius': getSize()
+        x: getBubbleX(),
+        y: getBubbleY(),
+        radius: getSize()
       }, {
-        'x': getRandomEasing()
-        ,'y': getRandomEasing()
-        ,'radius': getRandomEasing()
+        x: getRandomEasing(),
+        y: getRandomEasing(),
+        radius: getRandomEasing()
       }).wait(time += 1000);
 
       // TODO:  The fact that this returns an integer makes no
@@ -91,8 +80,7 @@
     }
 
     function generateKeyframes (bubbles) {
-      var i, j
-          ,time = 0;
+      var i, j, time = 0;
 
       for (i = 0; i < 30; i++) {
         time = 0;
@@ -100,14 +88,14 @@
         kapi.addActor(bubbles[i]);
 
         bubbles[i].keyframe(time, {
-          'x': kapi.canvas.width() / 2
-          ,'y': kapi.canvas.height() + 50
-          ,'radius': 0
-          ,'color': getColor()
+          x: kapi.canvas.width() / 2,
+          y: kapi.canvas.height() + 50,
+          radius: 0,
+          color: getColor()
         }, {
-          'x': getRandomEasing()
-          ,'y': getRandomEasing()
-          ,'radius': getRandomEasing()
+          x: getRandomEasing(),
+          y: getRandomEasing(),
+          radius: getRandomEasing()
         });
 
         for (j = 0; j < 3; j++) {
@@ -123,18 +111,14 @@
         var trackNames = bubble.getTrackNames();
 
         _.each(trackNames, function (trackName) {
-          var i
-              ,keyProp
-              ,newMillisecond
-              ,randomNumber
-              ,trackLength = bubble.getTrackLength(trackName);
+          var i, keyProp, newMillisecond, randomNumber, trackLength = bubble.getTrackLength(trackName);
 
           for (i = 1; i < trackLength - 1; i++) {
             keyProp = bubble.getKeyframeProperty(trackName, i);
             randomNumber = (Math.random() * 1000) - 50;
             newMillisecond = keyProp.millisecond + randomNumber;
             bubble.modifyKeyframeProperty(trackName, i, {
-              'millisecond': newMillisecond
+              millisecond: newMillisecond
             });
           }
         });
@@ -153,14 +137,14 @@
       kapi.play(1);
     }
 
-    var canvas = document.getElementsByTagName('canvas')[0]
-        ,kapi = new Kapi({
-          'context': canvas
-          ,'fps': 30
-          ,'height': 500
-          ,'width': 500
-        })
-        ,bubbles = [];
+    var canvas = document.getElementsByTagName('canvas')[0];
+    var kapi = new Kapi({
+      context: canvas,
+      fps: 30,
+      height: 500,
+      width: 500
+    });
+    var bubbles = [];
 
     kapi.on('animationComplete', generateSequence)
 

@@ -1,4 +1,4 @@
-/*! Rekapi - v0.15.6 - 2013-07-26 - http://rekapi.com */
+/*! Rekapi - v0.15.6 - 2013-07-27 - http://rekapi.com */
 /*!
  * Rekapi - Rewritten Kapi.
  * https://github.com/jeremyckahn/rekapi
@@ -37,46 +37,17 @@ function fireEvent (kapi, eventName, _, opt_data) {
 
 
 /*!
- * @param {Kapi} kapi
+ * Does nothing.  Virtually nothing at all.
  */
-function recalculateAnimationLength (kapi, _) {
-  var actorLengths = [];
-
-  _.each(kapi._actors, function (actor) {
-    actorLengths.push(actor.getEnd());
-  });
-
-  kapi._animationLength = Math.max.apply(Math, actorLengths);
-}
-
-
-/*!
- * Does nothing.  Absolutely nothing at all.
- */
-function noop () {
-  // NOOP!
-}
+function noop () {}
 
 
 var rekapiCore = function (root, _, Tweenable) {
-
   'use strict';
 
   // GLOBAL is read from for various environment properties
   // http://stackoverflow.com/questions/3277182/how-to-get-the-global-object-in-javascript
   var Fn = Function, GLOBAL = new Fn('return this')();
-
-
-  /*!
-   * Determines which iteration of the loop the animation is currently in.
-   * @param {Kapi} kapi
-   * @param {number} timeSinceStart
-   */
-  function determineCurrentLoopIteration (kapi, timeSinceStart) {
-    var currentIteration = Math.floor(
-        (timeSinceStart) / kapi._animationLength);
-    return currentIteration;
-  }
 
 
   /*!
@@ -90,49 +61,6 @@ var rekapiCore = function (root, _, Tweenable) {
 
 
   /*!
-   * Determines is the animation is complete or not.
-   * @param {Kapi} kapi
-   * @param {number} currentLoopIteration
-   */
-  function isAnimationComplete (kapi, currentLoopIteration) {
-    return currentLoopIteration >= kapi._timesToIterate
-        && kapi._timesToIterate !== -1;
-  }
-
-
-  /*!
-   * Stops the animation if the animation is complete.
-   * @param {Kapi} kapi
-   * @param {number} currentLoopIteration
-   */
-  function updatePlayState (kapi, currentLoopIteration) {
-    if (isAnimationComplete(kapi, currentLoopIteration)) {
-      kapi.stop();
-      fireEvent(kapi, 'animationComplete', _);
-    }
-  }
-
-
-  /*!
-   * Calculate how far in the animation loop `kapi` is, in milliseconds, based
-   * on the current time.  Also overflows into a new loop if necessary.
-   * @param {Kapi} kapi
-   * @return {number}
-   */
-  function calculateLoopPosition (kapi, forMillisecond, currentLoopIteration) {
-    var currentLoopPosition;
-
-    if (isAnimationComplete(kapi, currentLoopIteration)) {
-      currentLoopPosition = kapi._animationLength;
-    } else {
-      currentLoopPosition = forMillisecond % kapi._animationLength;
-    }
-
-    return currentLoopPosition;
-  }
-
-
-  /*!
    * Calculate the position and state for a given millisecond.
    * Also updates the state internally and accounts for how many loop
    * iterations the animation runs for.
@@ -140,11 +68,7 @@ var rekapiCore = function (root, _, Tweenable) {
    * @param {number} forMillisecond The millisecond to update
    */
   function updateToMillisecond (kapi, forMillisecond) {
-    var currentIteration = determineCurrentLoopIteration(kapi, forMillisecond);
-    var loopPosition = calculateLoopPosition(kapi, forMillisecond,
-        currentIteration);
-    kapi.update(loopPosition);
-    updatePlayState(kapi, currentIteration);
+    kapi.update(forMillisecond);
   }
 
 
@@ -169,14 +93,7 @@ var rekapiCore = function (root, _, Tweenable) {
       updateToCurrentMillisecond(kapi);
     };
 
-    // Need to check for .call presence to get around an IE limitation.
-    // See annotation for cancelLoop for more info.
-    if (kapi._scheduleUpdate.call) {
-      kapi._loopId = kapi._scheduleUpdate.call(GLOBAL,
-          updateFn, 1000 / kapi.config.fps);
-    } else {
-      kapi._loopId = setTimeout(updateFn, 1000 / kapi.config.fps);
-    }
+    kapi._loopId = kapi._scheduleUpdate.call(GLOBAL, updateFn, 1000 / kapi.config.fps);
   }
 
 
@@ -193,11 +110,11 @@ var rekapiCore = function (root, _, Tweenable) {
       // requestAnimationFrame() shim by Paul Irish (modified for Rekapi)
       // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
       updateMethod = GLOBAL.requestAnimationFrame ||
-        GLOBAL.webkitRequestAnimationFrame ||
-        GLOBAL.oRequestAnimationFrame      ||
-        GLOBAL.msRequestAnimationFrame     ||
-        (GLOBAL.mozCancelRequestAnimationFrame
-          && GLOBAL.mozRequestAnimationFrame) ||
+        GLOBAL.webkitRequestAnimationFrame        ||
+        GLOBAL.oRequestAnimationFrame             ||
+        GLOBAL.msRequestAnimationFrame            ||
+        (GLOBAL.mozCancelRequestAnimationFrame    &&
+          GLOBAL.mozRequestAnimationFrame)        ||
         GLOBAL.setTimeout;
     }
 
@@ -216,10 +133,10 @@ var rekapiCore = function (root, _, Tweenable) {
       cancelMethod = GLOBAL.clearTimeout;
     } else {
       cancelMethod = GLOBAL.cancelAnimationFrame ||
-        GLOBAL.webkitCancelAnimationFrame ||
-        GLOBAL.oCancelAnimationFrame      ||
-        GLOBAL.msCancelAnimationFrame     ||
-        GLOBAL.mozCancelRequestAnimationFrame ||
+        GLOBAL.webkitCancelAnimationFrame        ||
+        GLOBAL.oCancelAnimationFrame             ||
+        GLOBAL.msCancelAnimationFrame            ||
+        GLOBAL.mozCancelRequestAnimationFrame    ||
         GLOBAL.clearTimeout;
     }
 
@@ -227,31 +144,16 @@ var rekapiCore = function (root, _, Tweenable) {
   }
 
 
-  /*!
-   * Cancels an update loop.  This abstraction is needed to get around the fact
-   * that in IE, clearTimeout is not technically a function
-   * (https://twitter.com/kitcambridge/status/206655060342603777) and thus
-   * Function.prototype.call cannot be used upon it.
-   * @param {Kapi} kapi
-   */
-  function cancelLoop (kapi) {
-    if (kapi._cancelUpdate.call) {
-      kapi._cancelUpdate.call(GLOBAL, kapi._loopId);
-    } else {
-      clearTimeout(kapi._loopId);
-    }
-  }
-
   var now = Tweenable.now;
 
   var defaultConfig = {
-    'fps': 60
+    fps: 60
   };
 
   var playState = {
-    'STOPPED': 'stopped'
-    ,'PAUSED': 'paused'
-    ,'PLAYING': 'playing'
+    STOPPED: 'stopped',
+    PAUSED: 'paused',
+    PLAYING: 'playing'
   };
 
 
@@ -272,22 +174,19 @@ var rekapiCore = function (root, _, Tweenable) {
     this._playState = playState.STOPPED;
 
     this._events = {
-      'animationComplete': []
-      ,'playStateChange': []
-      ,'play': []
-      ,'pause': []
-      ,'stop': []
-      ,'beforeUpdate': []
-      ,'afterUpdate': []
-      ,'addActor': []
-      ,'removeActor': []
+      animationComplete: [],
+      playStateChange: [],
+      play: [],
+      pause: [],
+      stop: [],
+      beforeUpdate: [],
+      afterUpdate: [],
+      addActor: [],
+      removeActor: []
     };
 
     // How many times to loop the animation before stopping.
     this._timesToIterate = -1;
-
-    // Millisecond duration of the animation
-    this._animationLength = 0;
 
     // The setTimeout ID of `tick`
     this._loopId = null;
@@ -339,7 +238,6 @@ var rekapiCore = function (root, _, Tweenable) {
       actor.kapi = this;
       actor.fps = this.framerate();
       this._actors[actor.id] = actor;
-      recalculateAnimationLength(this, _);
       actor.setup();
 
       fireEvent(this, 'addActor', _, actor);
@@ -394,7 +292,6 @@ var rekapiCore = function (root, _, Tweenable) {
     delete this._actors[actor.id];
     delete actor.kapi;
     actor.teardown();
-    recalculateAnimationLength(this, _);
 
     fireEvent(this, 'removeActor', _, actor);
 
@@ -410,7 +307,7 @@ var rekapiCore = function (root, _, Tweenable) {
    * @return {Kapi}
    */
   Kapi.prototype.play = function (opt_howManyTimes) {
-    cancelLoop(this);
+    this._cancelUpdate.call(GLOBAL, this._loopId);
 
     if (this._playState === playState.PAUSED) {
       this._loopTimestamp += now() - this._pausedAtTime;
@@ -469,7 +366,7 @@ var rekapiCore = function (root, _, Tweenable) {
     }
 
     this._playState = playState.PAUSED;
-    cancelLoop(this);
+    this._cancelUpdate.call(GLOBAL, this._loopId);
     this._pausedAtTime = now();
 
     fireEvent(this, 'playStateChange', _);
@@ -487,7 +384,7 @@ var rekapiCore = function (root, _, Tweenable) {
    */
   Kapi.prototype.stop = function () {
     this._playState = playState.STOPPED;
-    cancelLoop(this);
+    this._cancelUpdate.call(GLOBAL, this._loopId);
 
     // Also kill any shifty tweens that are running.
     _.each(this._actors, function (actor) {
@@ -513,24 +410,13 @@ var rekapiCore = function (root, _, Tweenable) {
 
 
   /**
-   * Return the length of the animation, in milliseconds.
-   *
-   * __[Example](../../../../docs/examples/animation_length.html)__
-   * @return {number}
-   */
-  Kapi.prototype.animationLength = function () {
-    return this._animationLength;
-  };
-
-
-  /**
-   * Return the normalized (between 0 and 1) timeline position that was last calculated.
+   * Return the timeline position that was last calculated.
    *
    * __[Example](../../../../docs/examples/last_position_updated.html)__
    * @return {number}
    */
   Kapi.prototype.lastPositionUpdated = function () {
-    return (this._lastUpdatedMillisecond / this._animationLength);
+    return this._lastUpdatedMillisecond;
   };
 
 
@@ -651,8 +537,7 @@ var rekapiCore = function (root, _, Tweenable) {
    */
   Kapi.prototype.exportTimeline = function () {
     var exportData = {
-      'duration': this._animationLength
-      ,'actors': {}
+      actors: {}
     };
 
     _.each(this._actors, function (actor) {
@@ -668,22 +553,16 @@ var rekapiCore = function (root, _, Tweenable) {
   // Some hooks for testing.
   if (KAPI_DEBUG) {
     Kapi._private = {
-      'calculateLoopPosition': calculateLoopPosition
-      ,'updateToCurrentMillisecond': updateToCurrentMillisecond
-      ,'tick': tick
-      ,'determineCurrentLoopIteration': determineCurrentLoopIteration
-      ,'calculateTimeSinceStart': calculateTimeSinceStart
-      ,'isAnimationComplete': isAnimationComplete
-      ,'updatePlayState': updatePlayState
+      updateToCurrentMillisecond: updateToCurrentMillisecond,
+      tick: tick,
+      calculateTimeSinceStart: calculateTimeSinceStart
     };
   }
 
   root.Kapi = Kapi;
-
 };
 
 var rekapiActor = function (context, _, Tweenable) {
-
   'use strict';
 
   var DEFAULT_EASING = 'linear';
@@ -729,8 +608,7 @@ var rekapiActor = function (context, _, Tweenable) {
    */
   function sortPropertyTracks (actor) {
     _.each(actor._propertyTracks, function (track, name) {
-      actor._propertyTracks[name] = _.sortBy(actor._propertyTracks[name],
-        function (keyframeProperty) {
+      actor._propertyTracks[name] = _.sortBy(actor._propertyTracks[name], function (keyframeProperty) {
         return keyframeProperty.millisecond;
       });
     });
@@ -810,8 +688,7 @@ var rekapiActor = function (context, _, Tweenable) {
    * @return {Kapi.KeyframeProperty}
    */
   function findPropertyAtMillisecondInTrack (actor, trackName, millisecond) {
-    return _.find(actor._propertyTracks[trackName],
-        function (keyframeProperty) {
+    return _.find(actor._propertyTracks[trackName], function (keyframeProperty) {
       return keyframeProperty.millisecond === millisecond;
     });
   }
@@ -860,12 +737,11 @@ var rekapiActor = function (context, _, Tweenable) {
   function cleanupAfterKeyframeModification (actor) {
     sortPropertyTracks(actor);
     invalidatePropertyCache(actor);
-    recalculateAnimationLength(actor.kapi, _);
   }
 
 
   /**
-   * Create a `Kapi.Actor` instance.  Note that the rest of the API docs for `Kapi.Actor` will simply refer to this Object as `Actor`.
+   * Create a `Kapi.Actor` instance.  Note that the rest of the API docs `Kapi.Actor` will simply refer to this Object as `Actor`.
    *
    * Valid properties of `opt_config` (you can omit the ones you don't need):
    *
@@ -880,7 +756,7 @@ var rekapiActor = function (context, _, Tweenable) {
    * @param {Object} opt_config
    * @constructor
    */
-  Kapi.Actor = function (opt_config) {
+  var Actor = Kapi.Actor = function Actor (opt_config) {
 
     opt_config = opt_config || {};
 
@@ -888,15 +764,15 @@ var rekapiActor = function (context, _, Tweenable) {
     Tweenable.call(this);
 
     _.extend(this, {
-      '_propertyTracks': {}
-      ,'_timelinePropertyCaches': {}
-      ,'_timelinePropertyCacheIndex': []
-      ,'_keyframeProperties': {}
-      ,'id': _.uniqueId()
-      ,'setup': opt_config.setup || noop
-      ,'update': opt_config.update || noop
-      ,'teardown': opt_config.teardown || noop
-      ,'data': {}
+      _propertyTracks: {},
+      _timelinePropertyCaches: {},
+      _timelinePropertyCacheIndex: [],
+      _keyframeProperties: {},
+      id: _.uniqueId(),
+      setup: opt_config.setup || noop,
+      update: opt_config.update || noop,
+      teardown: opt_config.teardown || noop,
+      data: {}
     });
 
     if (opt_config.context) {
@@ -905,17 +781,16 @@ var rekapiActor = function (context, _, Tweenable) {
 
     return this;
   };
-  var Actor = Kapi.Actor;
 
 
-  // Kind of a fun way to set up an inheritance chain.  `ActorMethods` prevents
-  // methods on `Actor.prototype` from polluting `Tweenable`'s prototype with
-  // `Actor` specific methods.
-  var ActorMethods = function () {};
+  // inheritance chain similar to inherits from node and closure
+  /** @constructor */
+  var ActorMethods = function ActorMethods () {}
   ActorMethods.prototype = Tweenable.prototype;
+  Actor.superClass_ = Tweenable.prototype;
   Actor.prototype = new ActorMethods();
-  // But the magic doesn't stop here!  `Actor`'s constructor steals the
-  // `Tweenable` constructor.
+  /** @override */
+  Actor.prototype.constructor = Actor;
 
 
   /**
@@ -985,8 +860,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
    * @param {string|Object} opt_easing Optional easing string or configuration object.
    * @return {Kapi.Actor}
    */
-  Actor.prototype.keyframe = function keyframe (
-      millisecond, properties, opt_easing) {
+  Actor.prototype.keyframe = function (millisecond, properties, opt_easing) {
 
     var originalEasingString;
 
@@ -1010,8 +884,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     });
 
     _.each(properties, function (value, name) {
-      var newKeyframeProperty = new Kapi.KeyframeProperty(
-          this, millisecond, name, value, opt_easing[name]);
+      var newKeyframeProperty = new Kapi.KeyframeProperty(this, millisecond, name, value, opt_easing[name]);
 
       this._keyframeProperties[newKeyframeProperty.id] = newKeyframeProperty;
 
@@ -1022,10 +895,6 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
       this._propertyTracks[name].push(newKeyframeProperty);
       sortPropertyTracks(this);
     }, this);
-
-    if (this.kapi) {
-      recalculateAnimationLength(this.kapi, _);
-    }
 
     invalidatePropertyCache(this);
 
@@ -1042,8 +911,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
    * @return {Kapi.KeyframeProperty|undefined}
    */
   Actor.prototype.getKeyframeProperty = function (property, index) {
-    if (this._propertyTracks[property]
-        && this._propertyTracks[property][index]) {
+    if (this._propertyTracks[property] && this._propertyTracks[property][index]) {
       return this._propertyTracks[property][index];
     }
   };
@@ -1061,8 +929,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
   Actor.prototype.modifyKeyframeProperty = function (
       property, index, newProperties) {
 
-    if (this._propertyTracks[property]
-        && this._propertyTracks[property][index]) {
+    if (this._propertyTracks[property] && this._propertyTracks[property][index]) {
       this._propertyTracks[property][index].modifyWith(newProperties);
     }
 
@@ -1112,8 +979,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     var sourceEasings = {};
 
     _.each(this._propertyTracks, function (propertyTrack, trackName) {
-      var foundProperty = findPropertyAtMillisecondInTrack(this, trackName,
-          copyFrom);
+      var foundProperty = findPropertyAtMillisecondInTrack(this, trackName, copyFrom);
 
       if (foundProperty) {
         sourcePositions[trackName] = foundProperty.value;
@@ -1179,7 +1045,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     }
 
     if (starts.length === 0) {
-      starts = [0];
+      return 0;
     }
 
     return Math.min.apply(Math, starts);
@@ -1246,8 +1112,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     }
 
     return _.find(tracks, function (propertyTrack, trackName) {
-      var retrievedProperty =
-          findPropertyAtMillisecondInTrack(this, trackName, millisecond);
+      var retrievedProperty = findPropertyAtMillisecondInTrack(this, trackName, millisecond);
       return retrievedProperty !== undefined;
     }, this) !== undefined;
   };
@@ -1271,7 +1136,7 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
 
       if (property) {
         property.modifyWith({
-          'millisecond': to
+          millisecond: to
         });
       }
     }, this);
@@ -1312,18 +1177,16 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
    * @param {Object} opt_easingModification
    * @return {Kapi.Actor}
    */
-  Actor.prototype.modifyKeyframe = function (
-      millisecond, stateModification, opt_easingModification) {
+  Actor.prototype.modifyKeyframe = function (millisecond, stateModification, opt_easingModification) {
     opt_easingModification = opt_easingModification || {};
 
     _.each(this._propertyTracks, function (propertyTrack, trackName) {
-      var property = findPropertyAtMillisecondInTrack(
-          this, trackName, millisecond);
+      var property = findPropertyAtMillisecondInTrack(this, trackName, millisecond);
 
       if (property) {
         property.modifyWith({
-          'value': stateModification[trackName]
-          ,'easing': opt_easingModification[trackName]
+          value: stateModification[trackName],
+          easing: opt_easingModification[trackName]
         });
       }
     }, this);
@@ -1359,10 +1222,6 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
       }
     }, this);
 
-    if (this.kapi) {
-      recalculateAnimationLength(this.kapi, _);
-    }
-
     invalidatePropertyCache(this);
 
     return this;
@@ -1396,19 +1255,20 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
     var startMs = this.getStart();
     var endMs = this.getEnd();
 
-    millisecond = Math.min(endMs, millisecond);
+    var remainder = millisecond % endMs;
+    if (remainder === 0 && millisecond > 0)
+      millisecond = endMs;
+    else
+      millisecond = remainder;
 
     if (startMs <= millisecond) {
       var latestCacheId = getPropertyCacheIdForMillisecond(this, millisecond);
-      var propertiesToInterpolate =
-          this._timelinePropertyCaches[this._timelinePropertyCacheIndex[
-          latestCacheId]];
+      var propertiesToInterpolate = this._timelinePropertyCaches[this._timelinePropertyCacheIndex[latestCacheId]];
       var interpolatedObject = {};
 
       _.each(propertiesToInterpolate, function (keyframeProperty, propName) {
         if (keyframeProperty) {
-          interpolatedObject[propName] =
-              keyframeProperty.getValueAt(millisecond);
+          interpolatedObject[propName] = keyframeProperty.getValueAt(millisecond);
         }
       });
 
@@ -1427,10 +1287,10 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
    */
   Actor.prototype.exportTimeline = function () {
     var exportData = {
-      'start': this.getStart()
-      ,'end': this.getEnd()
-      ,'trackNames': this.getTrackNames()
-      ,'propertyTracks': {}
+      start: this.getStart(),
+      end: this.getEnd(),
+      trackNames: this.getTrackNames(),
+      propertyTracks: {}
     };
 
     _.each(this._propertyTracks, function (propertyTrack, trackName) {
@@ -1446,7 +1306,6 @@ Keyframe `1000` will have a `y` of `50`, and an `x` of `100`, because `x` was in
 };
 
 var rekapiKeyframeProperty = function (context, _, Tweenable) {
-
   'use strict';
 
   var DEFAULT_EASING = 'linear';
@@ -1464,8 +1323,7 @@ var rekapiKeyframeProperty = function (context, _, Tweenable) {
    * @param {string=} opt_easing The easing at which to animate to `value`.  Defaults to linear.
    * @constructor
    */
-  Kapi.KeyframeProperty = function (
-      ownerActor, millisecond, name, value, opt_easing) {
+  Kapi.KeyframeProperty = function (ownerActor, millisecond, name, value, opt_easing) {
     this.id = _.uniqueId('keyframeProperty_');
     this.ownerActor = ownerActor;
     this.millisecond = millisecond;
@@ -1493,8 +1351,7 @@ var rekapiKeyframeProperty = function (context, _, Tweenable) {
     var modifiedProperties = {};
 
     _.each(['millisecond', 'easing', 'value'], function (str) {
-      modifiedProperties[str] = typeof(newProperties[str]) === 'undefined' ?
-          this[str] : newProperties[str];
+      modifiedProperties[str] = typeof(newProperties[str]) === 'undefined' ? this[str] : newProperties[str];
     }, this);
 
     _.extend(this, modifiedProperties);
@@ -1529,10 +1386,9 @@ var rekapiKeyframeProperty = function (context, _, Tweenable) {
       toObj[this.name] = this.nextProperty.value;
       var delta = this.nextProperty.millisecond - this.millisecond;
       var interpolatedPosition = (millisecond - this.millisecond) / delta;
-      value = Tweenable.interpolate(fromObj, toObj, interpolatedPosition,
-          this.nextProperty.easing)[this.name];
+      value = Tweenable.interpolate(fromObj, toObj, interpolatedPosition, this.nextProperty.easing)[this.name];
     } else {
-      value =  this.value;
+      value = this.value;
     }
 
     return value;
@@ -1547,11 +1403,11 @@ var rekapiKeyframeProperty = function (context, _, Tweenable) {
    */
   KeyframeProperty.prototype.exportPropertyData = function () {
     return {
-     'id': this.id
-     ,'millisecond': this.millisecond
-     ,'name': this.name
-     ,'value': this.value
-     ,'easing': this.easing
+     id: this.id,
+     millisecond: this.millisecond,
+     name: this.name,
+     value: this.value,
+     easing: this.easing
     };
   };
 
@@ -1666,8 +1522,8 @@ var rekapiCanvasContext = function (context, _) {
     this.config.clearOnUpdate = true;
 
     _.extend(this._events, {
-      'beforeDraw': []
-      ,'afterDraw': []
+      beforeDraw: [],
+      afterDraw: []
     });
 
     // Set the dimensions on the <canvas> element based on Kapi constructor
@@ -1879,11 +1735,12 @@ var rekapiDOM = function (context, _) {
 
   var Kapi = context.Kapi;
   var vendorTransforms = [
-    'transform'
-    ,'webkitTransform'
-    ,'MozTransform'
-    ,'oTransform'
-    ,'msTransform'];
+    'transform',
+    'webkitTransform',
+    'MozTransform',
+    'oTransform',
+    'msTransform'
+  ];
   var transformFunctions = [
     'translateX',
     'translateY',
@@ -1892,7 +1749,8 @@ var rekapiDOM = function (context, _) {
     'scaleY',
     'rotate',
     'skewX',
-    'skewY'];
+    'skewY'
+  ];
 
 
   function setStyle (forElement, styleName, styleValue) {
@@ -2105,7 +1963,6 @@ var rekapiDOM = function (context, _) {
 };
 
 var rekapiToCSS = function (context, _) {
-
   'use strict';
 
   var Kapi = context.Kapi;
@@ -2118,35 +1975,35 @@ var rekapiToCSS = function (context, _) {
   var TRANSFORM_TOKEN = 'TRANSFORM';
   var VENDOR_TOKEN = 'VENDOR';
   var VENDOR_PREFIXES = Kapi.util.VENDOR_PREFIXES = {
-    'microsoft': '-ms-'
-    ,'mozilla': '-moz-'
-    ,'opera': '-o-'
-    ,'w3': ''
-    ,'webkit': '-webkit-'
+    'microsoft': '-ms-',
+    'mozilla': '-moz-',
+    'opera': '-o-',
+    'w3': '',
+    'webkit': '-webkit-'
   };
   var BEZIERS = {
-    linear: '.25,.25,.75,.75'
-    ,easeInQuad: '.55,.085,.68,.53'
-    ,easeInCubic: '.55,.055,.675,.19'
-    ,easeInQuart: '.895,.03,.685,.22'
-    ,easeInQuint: '.755,.05,.855,.06'
-    ,easeInSine: '.47,0,.745,.715'
-    ,easeInExpo: '.95,.05,.795,.035'
-    ,easeInCirc: '.6,.04,.98, .335'
-    ,easeOutQuad: '.25,.46,.45,.94'
-    ,easeOutCubic: '.215,.61,.355,1'
-    ,easeOutQuart: '.165,.84,.44,1'
-    ,easeOutQuint: '.23,1,.32,1'
-    ,easeOutSine: '.39,.575,.565,1'
-    ,easeOutExpo: '.19,1,.22,1'
-    ,easeOutCirc: '.075,.82,.165,1'
-    ,easeInOutQuad: '.455,.03,.515,.955'
-    ,easeInOutCubic: '.645,.045,.355,1'
-    ,easeInOutQuart: '.77,0,.175,1'
-    ,easeInOutQuint: '.86,0.07,1'
-    ,easeInOutSine: '.445,.05,.55,.95'
-    ,easeInOutExpo: '1,0,0,1'
-    ,easeInOutCirc: '.785,.135,.15,.86'
+    linear: '.25,.25,.75,.75',
+    easeInQuad: '.55,.085,.68,.53',
+    easeInCubic: '.55,.055,.675,.19',
+    easeInQuart: '.895,.03,.685,.22',
+    easeInQuint: '.755,.05,.855,.06',
+    easeInSine: '.47,0,.745,.715',
+    easeInExpo: '.95,.05,.795,.035',
+    easeInCirc: '.6,.04,.98, .335',
+    easeOutQuad: '.25,.46,.45,.94',
+    easeOutCubic: '.215,.61,.355,1',
+    easeOutQuart: '.165,.84,.44,1',
+    easeOutQuint: '.23,1,.32,1',
+    easeOutSine: '.39,.575,.565,1',
+    easeOutExpo: '.19,1,.22,1',
+    easeOutCirc: '.075,.82,.165,1',
+    easeInOutQuad: '.455,.03,.515,.955',
+    easeInOutCubic: '.645,.045,.355,1',
+    easeInOutQuart: '.77,0,.175,1',
+    easeInOutQuint: '.86,0.07,1',
+    easeInOutSine: '.445,.05,.55,.95',
+    easeInOutExpo: '1,0,0,1',
+    easeInOutCirc: '.785,.135,.15,.86'
   };
 
 
@@ -2159,9 +2016,9 @@ var rekapiToCSS = function (context, _) {
    * [2]: keyframes
    */
   var KEYFRAME_TEMPLATE = [
-    '@%skeyframes %s-keyframes {'
-    ,'%s'
-    ,'}'
+    '@%skeyframes %s-keyframes {',
+    '%s',
+    '}'
   ].join('\n');
 
   /*!
@@ -2169,9 +2026,9 @@ var rekapiToCSS = function (context, _) {
    * [1] class attributes
    */
   var CLASS_BOILERPLATE = [
-    '.%s {'
-    ,'%s'
-    ,'}'
+    '.%s {',
+    '%s',
+    '}'
   ].join('\n');
 
 
@@ -2244,7 +2101,7 @@ var rekapiToCSS = function (context, _) {
     var actorCSS = [];
     var animName = opts.name || this.getCSSName();
     var fps = opts.fps || DEFAULT_FPS;
-    var steps = Math.ceil((this.kapi.animationLength() / 1000) * fps);
+    var steps = Math.ceil((this.getEnd() / 1000) * fps);
     var actorClass = generateCSSClass(
         this, animName, opts.vendors, opts.iterations, opts.isCentered);
     var boilerplatedKeyframes = generateBoilerplatedKeyframes(
@@ -2365,20 +2222,17 @@ var rekapiToCSS = function (context, _) {
    * @param {boolean} opt_isCentered
    * @return {string}
    */
-  function generateCSSClass (
-      actor, animName, opt_vendors, opt_iterations, opt_isCentered) {
+  function generateCSSClass (actor, animName, opt_vendors, opt_iterations, opt_isCentered) {
     opt_vendors = opt_vendors || ['w3'];
     var classAttrs = [];
     var vendorAttrs;
 
     _.each(opt_vendors, function (vendor) {
-      vendorAttrs = generateCSSAnimationProperties(
-          actor, animName, vendor, opt_iterations, opt_isCentered);
+      vendorAttrs = generateCSSAnimationProperties(actor, animName, vendor, opt_iterations, opt_isCentered);
       classAttrs.push(vendorAttrs);
     });
 
-    var boilerplatedClass = printf(CLASS_BOILERPLATE
-        ,[animName, classAttrs.join('\n')]);
+    var boilerplatedClass = printf(CLASS_BOILERPLATE, [animName, classAttrs.join('\n')]);
 
     return boilerplatedClass;
   }
@@ -2392,20 +2246,16 @@ var rekapiToCSS = function (context, _) {
    * @param {boolean} opt_isCentered
    * @return {string}
    */
-  function generateCSSAnimationProperties (
-      actor, animName, vendor, opt_iterations, opt_isCentered) {
+  function generateCSSAnimationProperties (actor, animName, vendor, opt_iterations, opt_isCentered) {
     var generatedProperties = [];
     var prefix = VENDOR_PREFIXES[vendor];
 
-    generatedProperties.push(generateAnimationNameProperty(
-          actor, animName, prefix));
-    generatedProperties.push(
-        generateAnimationDurationProperty(actor, prefix));
+    generatedProperties.push(generateAnimationNameProperty(actor, animName, prefix));
+    generatedProperties.push(generateAnimationDurationProperty(actor, prefix));
     generatedProperties.push(generateAnimationDelayProperty(actor, prefix));
     generatedProperties.push(generateAnimationFillModeProperty(prefix));
     generatedProperties.push(generateAnimationTimingFunctionProperty(prefix));
-    generatedProperties.push(generateAnimationIterationProperty(
-        actor.kapi, prefix, opt_iterations));
+    generatedProperties.push(generateAnimationIterationProperty(actor.kapi, prefix, opt_iterations));
 
     if (opt_isCentered) {
       generatedProperties.push(generateAnimationCenteringRule(prefix));
@@ -2442,8 +2292,7 @@ var rekapiToCSS = function (context, _) {
    * @return {string}
    */
   function generateAnimationDurationProperty (actor, prefix) {
-    return printf('  %sanimation-duration: %sms;'
-        ,[prefix, actor.getEnd() - actor.getStart()]);
+    return printf('  %sanimation-duration: %sms;', [prefix, actor.getEnd() - actor.getStart()]);
   }
 
 
@@ -2486,9 +2335,7 @@ var rekapiToCSS = function (context, _) {
     if (opt_iterations) {
       iterationCount = opt_iterations;
     } else {
-      iterationCount = kapi._timesToIterate === -1
-        ? 'infinite'
-        : kapi._timesToIterate;
+      iterationCount = kapi._timesToIterate === -1 ? 'infinite' : kapi._timesToIterate;
     }
 
     var ruleTemplate = '  %sanimation-iteration-count: %s;';
@@ -2522,15 +2369,12 @@ var rekapiToCSS = function (context, _) {
       var i = 0, len = easingChunks.length;
       var previousChunk = easingChunks[0];
       var currentChunk;
-      for (i; i < len; i++) {
+      for (; i < len; i++) {
         currentChunk = easingChunks[i];
-        if (!(BEZIERS[currentChunk])
-            || previousChunk !== currentChunk) {
-          canOptimize = false;
-          break;
-        } else {
-          canOptimize = true;
+        if (!(BEZIERS[currentChunk]) || previousChunk !== currentChunk) {
+          return false;
         }
+        canOptimize = true;
 
         previousChunk = currentChunk;
       }
@@ -2546,8 +2390,7 @@ var rekapiToCSS = function (context, _) {
    * @param {number} toPercent
    * @return {string}
    */
-  function generateOptimizedKeyframeSegment (
-      property, fromPercent, toPercent) {
+  function generateOptimizedKeyframeSegment (property, fromPercent, toPercent) {
 
     var accumulator = [];
     var generalName = property.name;
@@ -2559,16 +2402,14 @@ var rekapiToCSS = function (context, _) {
     var easingFormula = BEZIERS[property.nextProperty.easing.split(' ')[0]];
     var timingFnChunk = printf('cubic-bezier(%s)', [easingFormula]);
 
-    var adjustedFromPercent = isInt(fromPercent) ?
-        fromPercent : fromPercent.toFixed(2);
-    var adjustedToPercent = isInt(toPercent) ?
-        toPercent : toPercent.toFixed(2);
+    var adjustedFromPercent = +fromPercent.toFixed(2);
+    var adjustedToPercent = +toPercent.toFixed(2);
 
-    accumulator.push(printf('  %s% {%s:%s;%sanimation-timing-function: %s;}',
-          [adjustedFromPercent, generalName, property.value, VENDOR_TOKEN
-          ,timingFnChunk]));
-    accumulator.push(printf('  %s% {%s:%s;}',
-          [adjustedToPercent, generalName, property.nextProperty.value]));
+    accumulator.push('  ' + adjustedFromPercent + '% {' + generalName + ':' +
+      property.value + ';' + VENDOR_TOKEN + 'animation-timing-function: ' +
+      timingFnChunk + ';}');
+    accumulator.push('  ' + adjustedToPercent + '% {' + generalName + ':' +
+      property.nextProperty.value + ';}');
 
     return accumulator.join('\n');
   }
@@ -2613,8 +2454,7 @@ var rekapiToCSS = function (context, _) {
 
       var trackSegment;
       if (canOptimizeKeyframeProperty(prop)) {
-        trackSegment = generateOptimizedKeyframeSegment(
-            prop, fromPercent, toPercent);
+        trackSegment = generateOptimizedKeyframeSegment(prop, fromPercent, toPercent);
 
         // If this and the previous segment are optimized, remove the
         // destination keyframe of the previous step.  The starting keyframe of
@@ -2622,15 +2462,13 @@ var rekapiToCSS = function (context, _) {
         if (previousSegmentWasOptimized) {
           var accumulatorLength = accumulator.length;
           var previousTrackSegment = accumulator[accumulatorLength - 1];
-          var optimizedPreviousTrackSegment =
-              previousTrackSegment.split('\n')[0];
+          var optimizedPreviousTrackSegment = previousTrackSegment.split('\n')[0];
           accumulator[accumulatorLength - 1] = optimizedPreviousTrackSegment;
         }
 
         previousSegmentWasOptimized = true;
       } else {
-        trackSegment = generateActorTrackSegment(
-            actor, prop, increments, incrementSize, actorStart, fromPercent);
+        trackSegment = generateActorTrackSegment(actor, prop, increments, incrementSize, actorStart, fromPercent);
 
         if (previousSegmentWasOptimized) {
           trackSegment.shift();
@@ -2648,8 +2486,7 @@ var rekapiToCSS = function (context, _) {
       }
     });
 
-    var trailingWait =
-        simulateTrailingWait(actor, track, actorStart, actorEnd);
+    var trailingWait = simulateTrailingWait(actor, track, actorStart, actorEnd);
 
     if (trailingWait) {
       accumulator.push(trailingWait);
@@ -2669,8 +2506,7 @@ var rekapiToCSS = function (context, _) {
     var firstProp = actor._propertyTracks[track][0];
 
     if (firstProp.millisecond !== actorStart) {
-      var fakeFirstProp = generateActorTrackSegment(
-          actor, firstProp, 1, 1, firstProp.millisecond, 0);
+      var fakeFirstProp = generateActorTrackSegment(actor, firstProp, 1, 1, firstProp.millisecond, 0);
       return fakeFirstProp.join('\n');
     }
   }
@@ -2687,8 +2523,7 @@ var rekapiToCSS = function (context, _) {
     var lastProp = _.last(actor._propertyTracks[track]);
 
     if (lastProp.millisecond !== actorEnd) {
-      var fakeLastProp = generateActorTrackSegment(
-          actor, lastProp, 1, 1, actorStart, 100);
+      var fakeLastProp = generateActorTrackSegment(actor, lastProp, 1, 1, actorStart, 100);
       return fakeLastProp.join('\n');
     }
   }
@@ -2723,11 +2558,9 @@ var rekapiToCSS = function (context, _) {
     var i, adjustedPercent, stepPrefix;
     for (i = 0; i < increments; i++) {
       adjustedPercent = fromPercent + (i * incrementSize);
-      actor.updateState(
-          ((adjustedPercent / 100) * actorLength) + actorStart);
+      actor.updateState(((adjustedPercent / 100) * actorLength) + actorStart);
       stepPrefix = +adjustedPercent.toFixed(2) + '% ';
-      accumulator.push(
-          '  ' + stepPrefix + serializeActorStep(actor, fromProp.name));
+      accumulator.push('  ' + stepPrefix + serializeActorStep(actor, fromProp.name));
     }
 
     return accumulator;
@@ -2772,31 +2605,29 @@ var rekapiToCSS = function (context, _) {
 
   if (KAPI_DEBUG) {
     Kapi._private.toCSS = {
-      'TRANSFORM_TOKEN': TRANSFORM_TOKEN
-      ,'VENDOR_TOKEN': VENDOR_TOKEN
-      ,'applyVendorBoilerplates': applyVendorBoilerplates
-      ,'applyVendorPropertyPrefixes': applyVendorPropertyPrefixes
-      ,'generateBoilerplatedKeyframes': generateBoilerplatedKeyframes
-      ,'generateCSSClass': generateCSSClass
-      ,'generateCSSAnimationProperties': generateCSSAnimationProperties
-      ,'generateActorKeyframes': generateActorKeyframes
-      ,'generateActorTrackSegment': generateActorTrackSegment
-      ,'serializeActorStep': serializeActorStep
-      ,'generateAnimationNameProperty': generateAnimationNameProperty
-      ,'generateAnimationDurationProperty': generateAnimationDurationProperty
-      ,'generateAnimationDelayProperty': generateAnimationDelayProperty
-      ,'generateAnimationFillModeProperty': generateAnimationFillModeProperty
-      ,'generateAnimationTimingFunctionProperty':
-          generateAnimationTimingFunctionProperty
-      ,'generateAnimationIterationProperty': generateAnimationIterationProperty
-      ,'generateAnimationCenteringRule': generateAnimationCenteringRule
-      ,'simulateLeadingWait': simulateLeadingWait
-      ,'simulateTrailingWait': simulateTrailingWait
-      ,'canOptimizeKeyframeProperty': canOptimizeKeyframeProperty
-      ,'generateOptimizedKeyframeSegment': generateOptimizedKeyframeSegment
+      TRANSFORM_TOKEN: TRANSFORM_TOKEN,
+      VENDOR_TOKEN: VENDOR_TOKEN,
+      applyVendorBoilerplates: applyVendorBoilerplates,
+      applyVendorPropertyPrefixes: applyVendorPropertyPrefixes,
+      generateBoilerplatedKeyframes: generateBoilerplatedKeyframes,
+      generateCSSClass: generateCSSClass,
+      generateCSSAnimationProperties: generateCSSAnimationProperties,
+      generateActorKeyframes: generateActorKeyframes,
+      generateActorTrackSegment: generateActorTrackSegment,
+      serializeActorStep: serializeActorStep,
+      generateAnimationNameProperty: generateAnimationNameProperty,
+      generateAnimationDurationProperty: generateAnimationDurationProperty,
+      generateAnimationDelayProperty: generateAnimationDelayProperty,
+      generateAnimationFillModeProperty: generateAnimationFillModeProperty,
+      generateAnimationTimingFunctionProperty: generateAnimationTimingFunctionProperty,
+      generateAnimationIterationProperty: generateAnimationIterationProperty,
+      generateAnimationCenteringRule: generateAnimationCenteringRule,
+      simulateLeadingWait: simulateLeadingWait,
+      simulateTrailingWait: simulateTrailingWait,
+      canOptimizeKeyframeProperty: canOptimizeKeyframeProperty,
+      generateOptimizedKeyframeSegment: generateOptimizedKeyframeSegment
     };
   }
-
 };
 
 var rekapiCSSContext = function (root, _, Tweenable) {
@@ -2943,9 +2774,9 @@ var rekapiCSSContext = function (root, _, Tweenable) {
    */
   CSSRenderer.prototype.prerender = function (opt_iterations, opt_fps) {
     return this._cachedCSS = this.kapi.toCSS({
-      'vendors': [getVendorPrefix()]
-      ,'fps': opt_fps
-      ,'iterations': opt_iterations
+      vendors: [getVendorPrefix()],
+      fps: opt_fps,
+      iterations: opt_iterations
     });
   };
 
@@ -3003,7 +2834,6 @@ var rekapiCSSContext = function (root, _, Tweenable) {
 };
 
 var rekapi = function (global, deps) {
-
   'use strict';
 
   // If `deps` is defined, it means that Rekapi is loaded via AMD.
@@ -3050,10 +2880,12 @@ if (typeof define === 'function' && define.amd) {
   // Example: define(['vendor/rekapi.min'], function(Kapi) { ... });
   define(['shifty', 'underscore'], function (Tweenable, Underscore) {
     var underscoreSupportsAMD = (Underscore != null);
-    var deps = {  Tweenable: Tweenable,
-                  // Some versions of Underscore.js support AMD, others don't.
-                  // If not, use the `_` global.
-                  underscore: underscoreSupportsAMD ? Underscore : _ };
+    var deps = {
+      Tweenable: Tweenable,
+      // Some versions of Underscore.js support AMD, others don't.
+      // If not, use the `_` global.
+      underscore: underscoreSupportsAMD ? Underscore : _
+    };
     var Kapi = rekapi({}, deps);
 
     if (KAPI_DEBUG) {

@@ -1,6 +1,5 @@
 /*global module:false, require:true, console:true */
 module.exports = function(grunt) {
-
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-qunit');
   grunt.loadNpmTasks('grunt-contrib-concat');
@@ -10,9 +9,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-dox');
 
   var banner = [
-        '/*! <%= pkg.name %> - v<%= pkg.version %> - ',
-        '<%= grunt.template.today("yyyy-mm-dd") %> - <%= pkg.homepage %> */\n'
-      ].join('');
+    '/*! <%= pkg.name %> - v<%= pkg.version %> - ',
+    '<%= grunt.template.today("yyyy-mm-dd") %> - <%= pkg.homepage %> */\n'
+  ].join('');
 
   // Project configuration.
   grunt.initConfig({
@@ -122,7 +121,8 @@ module.exports = function(grunt) {
           'dist/rekapi-underscore-shifty.min.js': [
             'bower_components/underscore/underscore.js',
             'bower_components/shifty/dist/shifty.js',
-            'dist/rekapi.js']
+            'dist/rekapi.js'
+          ]
         }
       },
       options: {
@@ -174,11 +174,11 @@ module.exports = function(grunt) {
   // Default task.
   grunt.registerTask('default', ['jshint', 'qunit']);
   grunt.registerTask('build', [
-      'copy:dist',
-      'concat:withExtensions',
-      'uglify:standardTarget',
-      'uglify:underscoreBundle',
-      'concat:withExtensionsDebug',
-      'dox']);
-
+    'copy:dist',
+    'concat:withExtensions',
+    'uglify:standardTarget',
+    'uglify:underscoreBundle',
+    'concat:withExtensionsDebug',
+    'dox'
+  ]);
 };

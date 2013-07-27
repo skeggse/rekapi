@@ -9,8 +9,8 @@
         return internalDebugNow();
       };
   </script>
-  <link href="../bower_components/qunit/qunit.css" rel="stylesheet" type="text/css" />
-  <script src="../bower_components/qunit/qunit.js"></script>
+  <link href="../bower_components/qunit/qunit/qunit.css" rel="stylesheet" type="text/css" />
+  <script src="../bower_components/qunit/qunit/qunit.js"></script>
   <script src="../bower_components/underscore/underscore.js"></script>
   <script src="../bower_components/shifty/dist/shifty.js"></script>
   <script src="../src/rekapi.core.js"></script>
@@ -33,56 +33,51 @@
     module('addActor');
 
     test('Actors are added successfully', function () {
-      var testKapi
-          ,testActor1;
+      var testKapi, testActor1;
 
       testKapi = setupTestKapi();
       testActor1 = setupTestActor(testKapi);
 
       equal(testKapi._actors[testActor1.id], testActor1,
-          'Actor is in the internal _actors Object');
+        'Actor is in the internal _actors Object');
     });
 
 
     test('Actors can only be added once', function () {
-      var testKapi
-          ,testActor1;
+      var testKapi, testActor1;
 
       testKapi = setupTestKapi();
       testActor1 = setupTestActor(testKapi);
 
       testKapi.addActor(testActor1);
 
-      equal(testKapi.actorCount(), 1,
-          'The actor was not added twice');
+      equal(testKapi.actorCount(), 1, 'The actor was not added twice');
     });
 
 
     test('Actors can be retrieved from the Kapi', function () {
-      var testKapi
-          ,testActor1;
+      var testKapi, testActor1;
 
       testKapi = setupTestKapi();
       testActor1 = setupTestActor(testKapi);
 
       equal(testKapi.getActor(testActor1.id), testActor1,
-          'Can reference the Actor inside the Kapi via the actor ID.');
+        'Can reference the Actor inside the Kapi via the actor ID.');
     });
 
 
     test('Actors are removed successfully', function () {
-      var testKapi
-          ,testActor1;
+      var testKapi, testActor1;
 
       testKapi = setupTestKapi();
       testActor1 = setupTestActor(testKapi);
       testKapi.removeActor(testActor1)
 
       equal(testKapi._actors[testActor1.id], undefined,
-          'Actor is no longer in the internal _actors Object');
+        'Actor is no longer in the internal _actors Object');
 
       equal(_.indexOf(testKapi._drawOrder, testActor1.id), -1,
-          'Actor is not in the internal _drawOrder array');
+        'Actor is not in the internal _drawOrder array');
     });
 
 
@@ -90,9 +85,7 @@
 
 
     test('Can get actor IDs', function () {
-      var testKapi
-          ,testActor1
-          ,testActor2;
+      var testKapi, testActor1, testActor2;
 
       testKapi = setupTestKapi();
       testActor1 = setupTestActor(testKapi);
@@ -101,11 +94,11 @@
       var ids = testKapi.getActorIds();
 
       equal(ids.length, 2,
-          'Number of IDs equal the number of Actors that were added');
+        'Number of IDs equal the number of Actors that were added');
       equal(_.contains(ids, testActor1.id), true,
-          'First Actor\'s ID is present in the ID list');
+        'First Actor\'s ID is present in the ID list');
       equal(_.contains(ids, testActor2.id), true,
-          'Second Actor\'s ID is present in the ID list');
+        'Second Actor\'s ID is present in the ID list');
     });
 
 
@@ -113,9 +106,7 @@
 
 
     test('Can get actors', function () {
-      var testKapi
-          ,testActor1
-          ,testActor2;
+      var testKapi, testActor1, testActor2;
 
       testKapi = setupTestKapi();
       testActor1 = setupTestActor(testKapi);
@@ -123,10 +114,8 @@
 
       var actors = testKapi.getAllActors();
 
-      equal(actors[testActor1.id], testActor1,
-          'First Actor was extracted');
-      equal(actors[testActor2.id], testActor2,
-          'Second Actor was extracted');
+      equal(actors[testActor1.id], testActor1, 'First Actor was extracted');
+      equal(actors[testActor2.id], testActor2, 'Second Actor was extracted');
     });
 
 
@@ -134,57 +123,13 @@
 
 
     test('Actors can be retrieved from the Kapi', function () {
-      var testKapi
-          ,testActor1;
+      var testKapi, testActor1;
 
       testKapi = setupTestKapi();
       testActor1 = setupTestActor(testKapi);
 
       equal(testKapi.getActor(testActor1.id), testActor1,
-          'Can reference the Actor inside the Kapi via the actor ID.');
-    });
-
-
-    module('animationLength');
-
-
-    test('Calculate animation length with one Actor', function () {
-      var testKapi
-          ,testActor1;
-
-      testKapi = setupTestKapi();
-      testActor1 = setupTestActor(testKapi);
-
-      testActor1
-        .keyframe(0, { x: 1 })
-        .keyframe(1000, { x: 2 })
-        .keyframe(2000, { x: 3 });
-
-      equal(testKapi.animationLength(), 2000,
-          'Length of the animation was calculated');
-    });
-
-
-    test('Calculate animation length with multiple Actors', function () {
-      var testKapi
-          ,testActor1
-          ,testActor2;
-
-      testKapi = setupTestKapi();
-      testActor1 = setupTestActor(testKapi);
-      testActor2 = setupTestActor(testKapi);
-
-      testActor1
-        .keyframe(0, { x: 1})
-        .keyframe(1000, { x: 2})
-        .keyframe(2000, { x: 3});
-
-      testActor2
-        .keyframe(0, { x: 1 })
-        .keyframe(5000, { x: 2 });
-
-      equal(testKapi.animationLength(), 5000,
-          'Length of the animation was calculated');
+        'Can reference the Actor inside the Kapi via the actor ID.');
     });
 
 
@@ -192,23 +137,19 @@
 
 
     test('Exported Kapi data has key data points', function () {
-      var testKapi
-          ,testActor;
+      var testKapi, testActor;
 
       testKapi = setupTestKapi();
       testActor = setupTestActor(testKapi);
       testActor.keyframe(0, {
-        'x': 1
+        x: 1
       }).keyframe(1000, {
-        'x': 2
+        x: 2
       });
 
       var exportedTimeline = testKapi.exportTimeline();
-      equal(exportedTimeline.duration, 1000,
-          'Duration was exported');
       deepEqual(exportedTimeline.actors[testActor.id],
-          testActor.exportTimeline(),
-          'Actor was exported');
+        testActor.exportTimeline(), 'Actor was exported');
     });
 
 
@@ -216,7 +157,6 @@
 
 
     test('Event is fired when an actor is added', function () {
-
       var testKapi = setupTestKapi();
       var testActor = new Kapi.Actor();
 
@@ -229,7 +169,6 @@
 
 
     test('Event is fired when an actor is removed', function () {
-
       var testKapi = setupTestKapi();
       var testActor = setupTestActor(testKapi);
 
@@ -243,9 +182,7 @@
 
     module('off');
 
-    test('Event handlers are  are not called after being unbound',
-        function () {
-
+    test('Event handlers are  are not called after being unbound', function () {
       var testKapi = setupTestKapi();
       var testActor = setupTestActor(testKapi);
       var handlerWasCalled = false;
@@ -263,25 +200,23 @@
 
 
     test('Last calculated state is recorded', function () {
-
       var testKapi = setupTestKapi();
       var testActor = setupTestActor(testKapi);
 
       testActor.keyframe(0, {
-        'x': 1
+        x: 1
       }).keyframe(1000, {
-        'x': 2
+        x: 2
       });
 
       testKapi.update(500);
-      equal(testKapi.lastPositionUpdated(), .5, 'Midpoint was recorded');
+      equal(testKapi.lastPositionUpdated(), 500, 'Midpoint was recorded');
     });
 
 
     module('actorCount');
 
     test('Actors are accounted for', function () {
-
       var kapi = new Kapi();
       kapi.addActor(new Kapi.Actor());
       kapi.addActor(new Kapi.Actor());
@@ -294,7 +229,6 @@
 
 
     test('Framerate can be writtena and read', function () {
-
       var kapi = new Kapi();
       equal(kapi.framerate(1000), 1000, 'Written framerate was read');
     });
@@ -304,13 +238,12 @@
 
 
     test('update causes the actor states to be recalculated', function () {
-
       var testKapi = setupTestKapi();
       var testActor = setupTestActor(testKapi);
 
       testActor
-        .keyframe(0, { x: 0 })
-        .keyframe(1000, { x: 10 });
+        .keyframe(0, {x: 0})
+        .keyframe(1000, {x: 10});
 
       testKapi.update(500);
 
@@ -320,17 +253,16 @@
 
     test('Calling update with no parameters causes the animation to update to the last rendered millisecond',
         function () {
-
       var testKapi = setupTestKapi();
       var testActor = setupTestActor(testKapi);
 
       testActor
-        .keyframe(0, { x: 0 })
-        .keyframe(1000, { x: 10 });
+        .keyframe(0, {x: 0})
+        .keyframe(1000, {x: 10});
 
       testKapi.update(250);
       equal(testActor.get().x, 2.5,
-          'The explicitly defined millisecond was updated');
+        'The explicitly defined millisecond was updated');
 
       // Simulate the state of testKapi if it was stopped at millisecond 500
       testKapi._lastUpdatedMillisecond = 500;
@@ -338,7 +270,7 @@
       testKapi.update();
 
       equal(testActor.get().x, 5,
-          'The last milliscond updated was recomputed');
+        'The last milliscond updated was recomputed');
     });
 
 
@@ -346,23 +278,19 @@
 
 
     test('Check the state of a playing animation', function () {
-
       internalDebugNow = function () {
         return new Date();
       };
 
       var testKapi = setupTestKapi();
       testKapi.play();
-      equal(testKapi.isPlaying(), true,
-          '.play() causes .isPlaying() to be true');
+      equal(testKapi.isPlaying(), true, '.play() causes .isPlaying() to be true');
 
       testKapi.pause();
-      equal(testKapi.isPlaying(), false,
-          '.pause() causes .isPlaying() to be false');
+      equal(testKapi.isPlaying(), false, '.pause() causes .isPlaying() to be false');
 
       testKapi.stop();
-      equal(testKapi.isPlaying(), false,
-          '.stop() causes .isPlaying() to be false');
+      equal(testKapi.isPlaying(), false, '.stop() causes .isPlaying() to be false');
     });
 
 
@@ -370,9 +298,7 @@
 
 
     test('Resuming a paused animation starts where it left off', function () {
-      var testKapi
-          ,testActor
-          ,calculatedMillisecond;
+      var testKapi, testActor, calculatedMillisecond;
 
       testKapi = setupTestKapi();
       testActor = setupTestActor(testKapi);
@@ -411,9 +337,7 @@
 
     test('Re-starting a stopped animation starts where from the beginning',
       function () {
-      var testKapi
-          ,testActor
-          ,calculatedMillisecond;
+      var testKapi, testActor, calculatedMillisecond;
 
       testKapi = setupTestKapi();
       testActor = setupTestActor(testKapi);
@@ -443,7 +367,7 @@
       testKapi.play();
 
       equal(testKapi._loopTimestamp, 1500,
-          '.stop() resets the timestamp of the animation');
+        '.stop() resets the timestamp of the animation');
     });
 
 
@@ -452,9 +376,7 @@
 
     test('Can start an animation from an arbitrary point on the timeline',
       function () {
-      var testKapi
-          ,testActor
-          ,calculatedMillisecond;
+      var testKapi, testActor, calculatedMillisecond;
 
       testKapi = setupTestKapi();
       testActor = setupTestActor(testKapi);
@@ -469,8 +391,7 @@
 
       testKapi.playFrom(500);
 
-      equal(testKapi._loopTimestamp, 2500,
-          '.playFrom resets the timestamp');
+      equal(testKapi._loopTimestamp, 2500, '.playFrom resets the timestamp');
     });
 
 
@@ -479,9 +400,7 @@
 
     test('Can calculate any point on the timeline and playFromCurrent()',
       function () {
-      var testKapi
-          ,testActor
-          ,calculatedMillisecond;
+      var testKapi, testActor, calculatedMillisecond;
 
       testKapi = setupTestKapi();
       testActor = setupTestActor(testKapi);
@@ -498,69 +417,16 @@
       testKapi.playFromCurrent();
 
       equal(testKapi._loopTimestamp, 2500,
-          '.playFromCurrent resets the timestamp from last updated position');
+        '.playFromCurrent resets the timestamp from last updated position');
     });
 
 
     module('Internals - Loops');
 
 
-    test('Actor.tween correctly calculates position based on time in a finite loop',
-        function () {
-
-      var testKapi = setupTestKapi();
-      var testActor = setupTestActor(testKapi);
-
-      internalDebugNow = function () {
-        return 0;
-      };
-
-      testActor
-        .keyframe(0, {
-          'x': 0
-        })
-        .keyframe(1000, {
-          'x': 100
-        });
-
-      internalDebugNow = function () {
-        return 0;
-      };
-
-      testKapi.play(2);
-
-      internalDebugNow = function () {
-        return 500;
-      };
-
-      Kapi._private.updateToCurrentMillisecond(testKapi);
-      equal(testActor.get().x, 50,
-          'Actor property has the proper value for halfway between a loop iteration');
-
-      internalDebugNow = function () {
-        return 1500;
-      };
-
-      Kapi._private.updateToCurrentMillisecond(testKapi);
-      equal(testActor.get().x, 50,
-          'Actor property has the proper value for halfway between a loop iteration');
-
-      internalDebugNow = function () {
-        return 2500;
-      };
-
-      Kapi._private.updateToCurrentMillisecond(testKapi);
-      equal(testActor.get().x, 100,
-          'Loop sequence has completed, actor is locked at final position');
-    });
-
-
     test('Actor.tween correctly calculates position based on time in an infinite loop',
         function () {
-
-      var testKapi
-          ,testActor
-          ,calculatedMillisecond;
+      var testKapi, testActor, calculatedMillisecond;
 
       testKapi = setupTestKapi();
       testActor = setupTestActor(testKapi);
@@ -569,13 +435,11 @@
         return 0;
       };
 
-      testActor
-        .keyframe(0, {
-          'x': 0
-        })
-        .keyframe(1000, {
-          'x': 100
-        });
+      testActor.keyframe(0, {
+        x: 0
+      }).keyframe(1000, {
+        x: 100
+      });
 
       internalDebugNow = function () {
         return 0;
@@ -589,7 +453,7 @@
 
       Kapi._private.updateToCurrentMillisecond(testKapi);
       equal(testActor.get().x, 50,
-          'Actor property has the proper value for halfway between a loop iteration');
+        'Actor property has the proper value for halfway between a loop iteration');
 
       internalDebugNow = function () {
         return 1500;
@@ -597,7 +461,7 @@
 
       Kapi._private.updateToCurrentMillisecond(testKapi);
       equal(testActor.get().x, 50,
-          'Actor property has the proper value for halfway between a loop iteration');
+        'Actor property has the proper value for halfway between a loop iteration');
 
       internalDebugNow = function () {
         return 10000000500;
@@ -605,119 +469,16 @@
 
       Kapi._private.updateToCurrentMillisecond(testKapi);
       equal(testActor.get().x, 50,
-          'Loop sequence is still running at some distant point in the future');
-    });
-
-
-    module('Internals - calculateLoopPosition');
-
-
-    test('Calculate accurate position in the tween', function () {
-      var testKapi
-          ,testActor1
-          ,calculatedMillisecond;
-
-      testKapi = setupTestKapi();
-      testActor1 = setupTestActor(testKapi);
-
-      testActor1
-        .keyframe(0, { x: 1 })
-        .keyframe(2000, { x: 2 });
-
-      calculatedMillisecond =  Kapi._private
-        .calculateLoopPosition(testKapi, 1000, 0);
-
-      equal(calculatedMillisecond, 1000,
-          'Calculated a midpoint of the animation');
-    });
-
-
-    test('Calculate accurate overflow position in the tween', function () {
-      var testKapi
-          ,testActor1
-          ,calculatedMillisecond;
-
-      testKapi = setupTestKapi();
-      testActor1 = setupTestActor(testKapi);
-
-      testActor1
-        .keyframe(0, { x: 1 })
-        .keyframe(2000, { x: 2 });
-
-      calculatedMillisecond =
-          Kapi._private.calculateLoopPosition(testKapi, 2500, 1);
-
-      equal(calculatedMillisecond, 500,
-          'Calculated an overflow position of the animation');
-    });
-
-
-    module("Internals - determineCurrentLoopIteration");
-
-
-    test('Calculate a given iteration of a loop', function () {
-      var testKapi
-          ,testActor1
-          ,calculatedIteration;
-
-      testKapi = setupTestKapi();
-      testActor1 = setupTestActor(testKapi);
-
-      testActor1
-        .keyframe(0, { x: 1 })
-        .keyframe(2000, { x: 2 });
-
-      calculatedIteration =
-          Kapi._private.determineCurrentLoopIteration(testKapi, 0);
-
-      equal(calculatedIteration, 0,
-          'Calculated the beginning of the first iteration');
-
-
-      calculatedIteration =
-          Kapi._private.determineCurrentLoopIteration(testKapi, 1000);
-
-      equal(calculatedIteration, 0,
-          'Calculated the middle of the first iteration');
-
-
-      calculatedIteration =
-          Kapi._private.determineCurrentLoopIteration(testKapi, 1999);
-
-      equal(calculatedIteration, 0,
-          'Calculated the end of the first iteration');
-
-
-      calculatedIteration =
-          Kapi._private.determineCurrentLoopIteration(testKapi, 4000);
-
-      equal(calculatedIteration, 2,
-          'Calculated the beginning of an iteration greater than 1');
-
-
-      calculatedIteration =
-          Kapi._private.determineCurrentLoopIteration(testKapi, 5000);
-
-      equal(calculatedIteration, 2,
-          'Calculated the middle of an iteration greater than 1');
-
-
-      calculatedIteration =
-          Kapi._private.determineCurrentLoopIteration(testKapi, 5999);
-
-      equal(calculatedIteration, 2,
-          'Calculated the end of an iteration greater than 1');
+        'Loop sequence is still running at some distant point in the future');
     });
 
 
     module('Internals - calculateTimeSinceStart');
 
 
-    test('Calculate the delta of the current time and when the animation began'
-      ,function () {
-      var testKapi
-          ,testActor1
-          ,calculatedTime;
+    test('Calculate the delta of the current time and when the animation began',
+      function () {
+      var testKapi, testActor1, calculatedTime;
 
       testKapi = setupTestKapi();
       testActor1 = setupTestActor(testKapi);
@@ -738,100 +499,8 @@
 
       calculatedTime = Kapi._private.calculateTimeSinceStart(testKapi);
       equal(calculatedTime, 500,
-          'The expected amount of time since beginning the animation was calculated');
-
+        'The expected amount of time since beginning the animation was calculated');
     });
-
-
-    module('Internals - isAnimationComplete');
-
-
-    test('Determine if the animation has completed in a finite loop'
-      ,function () {
-      var testKapi
-          ,testActor1
-          ,animationIsComplete;
-
-      testKapi = setupTestKapi();
-      testActor1 = setupTestActor(testKapi);
-
-      testActor1
-        .keyframe(0, {})
-        .keyframe(2000, {});
-
-      testKapi.play(3);
-
-      animationIsComplete = Kapi._private.isAnimationComplete(testKapi, 1);
-      equal(animationIsComplete, false,
-          'The animation is not complete');
-
-      animationIsComplete = Kapi._private.isAnimationComplete(testKapi, 2);
-      equal(animationIsComplete, false,
-          'The last iteration of a loop is condsider to be not complete');
-
-      animationIsComplete = Kapi._private.isAnimationComplete(testKapi, 3);
-      equal(animationIsComplete, true,
-          'An iteration after the specified amount of iterations is considered to be complete');
-    });
-
-
-    test('Determine if the animation has completed in an infinite loop'
-      ,function () {
-      var testKapi
-          ,testActor1
-          ,animationIsComplete;
-
-      testKapi = setupTestKapi();
-      testActor1 = setupTestActor(testKapi);
-
-      testActor1
-        .keyframe(0, {})
-        .keyframe(2000, {});
-
-      testKapi.play();
-
-      animationIsComplete = Kapi._private.isAnimationComplete(testKapi, 1);
-      equal(animationIsComplete, false,
-          'The animation is not complete');
-
-      animationIsComplete = Kapi._private.isAnimationComplete(testKapi, 3);
-      equal(animationIsComplete, false,
-          'The animation is not complete');
-
-      animationIsComplete = Kapi._private.isAnimationComplete(testKapi, 1000);
-      equal(animationIsComplete, false,
-          'The animation is not complete');
-    });
-
-
-    module('Internals - updatePlayState');
-
-
-    test('Determine if the animation\'s internal state is "playing" after evaluating a given iteration'
-      ,function () {
-      var testKapi
-          ,testActor1;
-
-      testKapi = setupTestKapi();
-      testActor1 = setupTestActor(testKapi);
-
-      testActor1
-        .keyframe(0, {})
-        .keyframe(2000, {});
-
-      testKapi.play(3);
-
-      Kapi._private.updatePlayState(testKapi, 0);
-      equal(testKapi.isPlaying(), true, 'The animation is still running');
-
-      Kapi._private.updatePlayState(testKapi, 2);
-      equal(testKapi.isPlaying(), true, 'The animation is still running');
-
-      Kapi._private.updatePlayState(testKapi, 3);
-      equal(testKapi.isPlaying(), false, 'The animation is still complete');
-    });
-
-
   } ());
   </script>
 </head>
